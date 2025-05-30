@@ -4,11 +4,174 @@ import {Card, CardContent} from '@/components/ui/card';
 import {Check, File, Upload, X, Plus, Loader2} from 'lucide-react';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 // Define a type for file
 interface FileWithPassword {
     file: File;
+    cardName?: string;
 }
+
+// List of credit card names
+const creditCardOptions = [
+    "HDFC Bank Superia Credit Card",
+    "AU Bank Xcite Ultra Credit Card",
+    "Emirates Skywards ICICI Bank Sapphiro Credit Card",
+    "HSBC Taj Credit Card",
+    "IndusInd Bank Celesta Credit Card",
+    "Times Black ICICI Bank Credit Card",
+    "SBI Shaurya Credit Card",
+    "Yes Private/Private Prime Credit Card",
+    "HDFC Bank Millennia Credit Card",
+    "ICICI Bank HPCL Super Saver Credit Card",
+    "ICICI Bank HPCL Coral Credit Card",
+    "IndusInd Bank Platinum RuPay Credit Card",
+    "Axis Bank Pride Signature Credit Card",
+    "Yes Bank Wellness Credit Card",
+    "RBL Bank Titanium Delight Card",
+    "IndusInd Bank Crest Credit Card",
+    "YES Prosperity Cashback Plus Credit Card",
+    "Standard Chartered DigiSmart Credit Card",
+    "ICICI Bank Emeralde Private Metal Credit Card",
+    "Kotak Royale Signature Credit Card",
+    "Swiggy HDFC Bank Credit Card",
+    "Federal Bank Visa Celesta Credit Card",
+    "Paytm HDFC Bank Credit Card",
+    "Emirates Skywards ICICI Bank Rubyx Credit Card",
+    "Kotak Solitaire Credit Card",
+    "IndusInd Bank Duo Plus Credit Card",
+    "InterMiles ICICI Bank Coral Credit Card",
+    "SBI Card Miles Elite",
+    "Kotak Essentia Platinum Credit Card",
+    "BOBCARD Premier Credit Card",
+    "IndusInd Bank ePay Amex Credit Card",
+    "PVR Kotak Platinum Credit Card",
+    "HDFC Bank Diners Club Privilege Credit Card",
+    "HDFC Bank Diners Club Miles Credit Card",
+    "PVR Kotak Gold Credit Card",
+    "HSBC Live+ Credit Card – Cashback on Groceries",
+    "HDFC Bank Diners Club Black Credit Card",
+    "Cashback SBI Credit Card",
+    "BOBCARD Easy Credit Card",
+    "Marriott Bonvoy HDFC Bank Credit Card",
+    "InterMiles ICICI Bank Sapphiro Credit Card",
+    "YES Bank EMI Credit Card",
+    "EazyDiner IndusInd Bank Credit Card",
+    "YES Prosperity Rewards Credit Card",
+    "Axis Bank ACE Credit Card",
+    "Amazon Pay ICICI Bank Credit Card",
+    "ICICI Bank Expressions Credit Card",
+    "EazyDiner IndusInd Platinum Credit Card",
+    "SBI Prime Credit Card",
+    "RBL Bank iGlobe Credit Card",
+    "Flipkart Axis Bank Credit Card",
+    "American Express Platinum Charge Card",
+    "IndusInd Nexxt Credit Card",
+    "Axis Bank Privilege Credit Card",
+    "Paytm HDFC Bank Select Credit Card",
+    "Myntra Kotak Credit Card",
+    "American Express SmartEarn Credit Card",
+    "RBL Bank Platinum Maxima Plus Credit Card",
+    "Yes Bank Marquee Credit Card",
+    "AU Altura Plus Credit Card",
+    "Axis Bank Burgundy Private Credit Card",
+    "AU Bank InstaPay Credit Card",
+    "InterMiles HDFC Bank Signature Credit Card",
+    "Kotak Mahindra Bank UPI RuPay Credit Card",
+    "Kotak 811 Credit Card",
+    "IndianOil Axis Bank RuPay Credit Card",
+    "HDFC Bank Pixel Play Credit Card",
+    "YES First Preferred Credit Card",
+    "HDFC Bank RuPay IRCTC Credit Card",
+    "ICICI Bank British Airways Classic Credit Card",
+    "RBL Bank ShopRite Credit Card",
+    "YES Elite+ Credit Card",
+    "Axis Bank AURA Credit Card",
+    "HSBC Visa Platinum Credit Card",
+    "ICICI Bank Coral Credit Card",
+    "InterMiles ICICI Bank Rubyx Credit Card",
+    "ICICI Bank Rubyx Credit Card",
+    "HDFC Bank Regalia Gold Credit Card",
+    "ICICI Bank VISA Signature Credit Card",
+    "Kotak League Platinum Credit Card",
+    "6E Rewards – IndiGo HDFC Bank Credit Card",
+    "IRCTC SBI RuPay Credit Card",
+    "Axis Bank Cashback Credit Card",
+    "Axis Bank Magnus Credit Card",
+    "Indian Oil Kotak Credit Card",
+    "HSBC TravelOne Credit Card",
+    "Flipkart Axis Bank Super Elite Credit Card",
+    "HSBC Premier Metal Credit Card",
+    "HDFC Bank MoneyBack Plus Credit Card",
+    "American Express Platinum Travel Credit Card",
+    "Tata Neu Plus HDFC Bank Credit Card",
+    "IndianOil Axis Bank Premium Credit Card",
+    "SBI MILES Credit Card",
+    "PVR INOX Kotak Credit Card",
+    "AU Zenith+ Credit Card",
+    "BOBCARD Select Credit Card",
+    "IRCTC SBI Card Premier",
+    "MakeMyTrip ICICI Bank Credit Card",
+    "Axis Bank Horizon Credit Card",
+    "Indian Oil HDFC Bank Credit Card",
+    "Axis Bank SELECT Credit Card",
+    "YES ACE Credit Card",
+    "IndusInd Bank Indulge Credit Card",
+    "Indus Solitaire Credit Card",
+    "IndusInd Bank Pioneer Heritage Credit Card",
+    "Tata Neu Infinity HDFC Bank Credit Card",
+    "American Express Platinum Reserve Credit Card",
+    "Standard Chartered EaseMyTrip Credit Card",
+    "AU Altura Credit Card",
+    "YES Bank Wellness Plus Credit Card",
+    "SBI MILES PRIME Credit Card",
+    "HDFC Bank All Miles Credit Card",
+    "ICICI Bank Sapphiro Credit Card",
+    "HDFC Bank Regalia Credit Card",
+    "HDFC Bank Regalia First Credit Card",
+    "InterMiles HDFC Bank Platinum Credit Card",
+    "Standard Chartered Ultimate Credit Card",
+    "YES Select Credit Card",
+    "ICICI Bank Platinum Chip Credit Card",
+    "Standard Chartered Platinum Rewards Credit Card",
+    "Standard Chartered Smart Credit Card",
+    "IRCTC RuPay BOBCARD Credit Card",
+    "Axis Bank SuperMoney RuPay Credit Card",
+    "RBL Bank Edition Credit Card",
+    "IndusInd Bank Platinum Aura Edge Credit Card",
+    "Axis Bank Neo Credit Card",
+    "Airtel Axis Bank Credit Card",
+    "SBI SimplyCLICK Credit Card",
+    "HDFC Bank Diners Club Rewardz Credit Card",
+    "HDFC Bank Pixel Go Credit Card",
+    "SBI SimplySAVE UPI RuPay Credit Card",
+    "RBL Bank Novio Credit Card",
+    "Standard Chartered Priority Visa Infinite Credit Card",
+    "HDFC Bank Diners Club Premium Credit Card",
+    "Axis Bank Rewards Credit Card",
+    "HDFC Platinum Times Credit Card",
+    "YES Bank RESERV Credit Card",
+    "RBL World Safari Credit Card",
+    "HDFC Bank Diners Club Black Metal Edition Credit Card",
+    "HDFC Bank Freedom Credit Card",
+    "SBI ELITE Credit Card",
+    "IndusInd Legend Credit Card",
+    "Axis Bank Atlas Credit Card",
+    "HDFC Bank INFINIA Metal Credit Card",
+    "Axis My Zone Credit Card",
+    "IndusInd Bank Platinum Credit Card",
+    "Kotak Zen Signature Credit Card",
+    "Standard Chartered Rewards Credit Card",
+    "Axis Bank Miles & More Credit Card",
+    "RBL Platinum Delight Credit Card",
+    "Federal Bank Imperio Credit Card"
+];
 
 interface FileUploadProps {
     onComplete: (files: FileWithPassword[]) => void;
@@ -22,7 +185,8 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
             const filesWithoutPasswords = files.map(file => ({
-                file
+                file,
+                cardName: undefined // Initialize with undefined
             }));
             // Limit to maximum 5 files total
             setUploadedFiles(prev => {
@@ -33,6 +197,15 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
             // Reset the file input value so the same file can be selected again
             e.target.value = '';
         }
+    };
+
+    // Handle card selection for a specific file
+    const handleCardSelection = (index: number, cardName: string) => {
+        setUploadedFiles(prev => {
+            const newFiles = [...prev];
+            newFiles[index] = { ...newFiles[index], cardName };
+            return newFiles;
+        });
     };
 
     const removeFile = (index: number) => {
@@ -117,6 +290,28 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
                                             <X className="h-3 w-3"/>
                                         </Button>
                                     </div>
+
+                                    {/* Card Selection Dropdown */}
+                                    <div className="mt-2">
+                                        <Label htmlFor={`card-select-${index}`} className="text-xs text-gray-600 mb-1">
+                                            Select your credit card
+                                        </Label>
+                                        <Select
+                                            value={fileWithPassword.cardName}
+                                            onValueChange={(value) => handleCardSelection(index, value)}
+                                        >
+                                            <SelectTrigger id={`card-select-${index}`} className="w-full text-xs h-8">
+                                                <SelectValue placeholder="Select a credit card" />
+                                            </SelectTrigger>
+                                            <SelectContent className="max-h-[200px] overflow-y-auto">
+                                                {creditCardOptions.map((card, cardIndex) => (
+                                                    <SelectItem key={cardIndex} value={card} className="text-xs">
+                                                        {card}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -162,6 +357,8 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
                                     </p>
                                 )}
                             </div>
+
+                            {/* Credit card selection is optional */}
 
                             <Button
                                 onClick={() => {

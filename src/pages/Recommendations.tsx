@@ -97,6 +97,7 @@ const Recommendations = () => {
     if (storedCardRecommendations) {
       try {
         const parsedCardRecommendations = JSON.parse(storedCardRecommendations);
+        console.log("cardREcommendataion", parsedCardRecommendations);
         setCardRecommendations(parsedCardRecommendations);
         console.log('Retrieved card recommendations data:', parsedCardRecommendations);
       } catch (error) {
@@ -111,10 +112,25 @@ const Recommendations = () => {
     // Get customerId from sessionStorage
     const customerId = sessionStorage.getItem('customerId');
     if (customerId) {
+      // Retrieve card names from sessionStorage
+      let cardNames: string[] = [];
+      const storedCardNames = sessionStorage.getItem('selectedCardNames');
+      if (storedCardNames) {
+        try {
+          cardNames = JSON.parse(storedCardNames);
+          console.log('Retrieved card names from sessionStorage:', cardNames);
+        } catch (error) {
+          console.error('Error parsing card names from sessionStorage:', error);
+        }
+      }
+
       // Create request body
       const requestBody = {
-        customerId: customerId
+        customerId: customerId,
+        cardName: cardNames.length > 0 ? cardNames : undefined
       };
+
+      console.log('Request body for get-recommendations in Recommendations.tsx:', requestBody);
 
       // Make the API call
       fetch(apiUrl, {
@@ -203,26 +219,28 @@ const Recommendations = () => {
 
   // Function to map API response data to the format expected by the component
   const mapApiDataToCardFormat = (apiData: CardRecommendation[]) => {
+    console.log("apiData", apiData);
     if (!apiData || apiData.length === 0) {
       return [];
     }
 
     return apiData.map((card, index) => {
-      // Parse the totalReturn string to get a numeric value (remove ₹ and convert to number)
-      const totalReturnValue = parseFloat(card.totalReturn.replace('₹', '').replace(',', ''));
+      // Keep the totalReturn as a string without converting to number
+      const totalReturnValue = card.totalReturn.replace('₹', '').replace(',', '');
 
       // Get top 4 return categories
       const returnBreakupEntries = Object.entries(card.returnBreakup)
-        .filter(([_, value]) => value !== '₹0.00')
+        .filter(([_, value]) => value !== '₹0.00' && value !== '₹0')
         .map(([category, value]) => ({
           category,
-          value: parseFloat(value.replace('₹', '').replace(',', '')),
+          value: value.replace('₹', '').replace(',', ''),
         }))
-        .sort((a, b) => b.value - a.value)
+        // Sort by numeric value for display purposes only
+        .sort((a, b) => parseFloat(b.value) - parseFloat(a.value))
         .slice(0, 4);
 
       // Get top 4 benefits
-      const topBenefits = card.benefits.slice(0, 4).map(benefit => benefit.title);
+      const topBenefits = card.benefits ? card.benefits.slice(0, 4).map(benefit => benefit.title) : [];
 
       // Determine card theme based on rank
       let theme;
@@ -250,14 +268,15 @@ const Recommendations = () => {
         id: card.rank,
         name: card.cardName,
         image: '/placeholder.svg',
-        returnPercentage: parseFloat(totalReturnValue.toFixed(1)),
-        currentCardReturn: parseFloat(card.currentReturn.replace('₹', '').replace(',', '')),
+        totalReturn: card.totalReturn, // Keep the original string format with ₹ symbol
+        currentReturn: card.currentReturn, // Keep the original string format with ₹ symbol
+        returnValue: totalReturnValue, // Keep as string
         isTopRecommended: index === 0, // First card is top recommended
-        keyBenefits: topBenefits.length > 0 ? topBenefits : ['No specific benefits listed'],
+        keyBenefits: topBenefits && topBenefits.length > 0 ? topBenefits : ['No specific benefits listed'],
         returnBreakup: returnBreakupEntries.map(entry => ({
           category: entry.category,
-          percentage: Math.round(entry.value / totalReturnValue * 100),
-          amount: entry.value
+          percentage: Math.round((parseFloat(entry.value) / parseFloat(totalReturnValue)) * 100).toString(), // Convert to string
+          amount: entry.value // Keep as string
         })),
         theme,
         // Include original API data for use in the modal
@@ -272,8 +291,9 @@ const Recommendations = () => {
       id: 1,
       name: 'HDFC Diners Club Black',
       image: '/placeholder.svg',
-      returnPercentage: 8.5,
-      currentCardReturn: 2.1,
+      totalReturn: '₹3,500',
+      currentReturn: '₹1,200',
+      returnValue: '3500', // Changed to string
       isTopRecommended: true,
       keyBenefits: [
         'Unlimited domestic lounge access',
@@ -282,10 +302,10 @@ const Recommendations = () => {
         'Priority Pass membership'
       ],
       returnBreakup: [
-        { category: 'Dining', percentage: 10, amount: 1200 },
-        { category: 'Travel', percentage: 8, amount: 640 },
-        { category: 'Shopping', percentage: 5, amount: 750 },
-        { category: 'Others', percentage: 1, amount: 350 },
+        { category: 'Dining', percentage: '10', amount: '1200' }, // Changed to strings
+        { category: 'Travel', percentage: '8', amount: '640' }, // Changed to strings
+        { category: 'Shopping', percentage: '5', amount: '750' }, // Changed to strings
+        { category: 'Others', percentage: '1', amount: '350' }, // Changed to strings
       ],
       theme: {
         primary: '#1a1a1a',
@@ -297,8 +317,9 @@ const Recommendations = () => {
       id: 2,
       name: 'SBI Card PRIME',
       image: '/placeholder.svg',
-      returnPercentage: 7.2,
-      currentCardReturn: 2.1,
+      totalReturn: '₹2,800',
+      currentReturn: '₹1,000',
+      returnValue: '2800', // Changed to string
       isTopRecommended: false,
       keyBenefits: [
         '5X rewards on online shopping',
@@ -307,9 +328,9 @@ const Recommendations = () => {
         'Movie ticket offers'
       ],
       returnBreakup: [
-        { category: 'Shopping', percentage: 5, amount: 750 },
-        { category: 'Fuel', percentage: 2.5, amount: 150 },
-        { category: 'Others', percentage: 1, amount: 350 },
+        { category: 'Shopping', percentage: '5', amount: '750' }, // Changed to strings
+        { category: 'Fuel', percentage: '2.5', amount: '150' }, // Changed to strings
+        { category: 'Others', percentage: '1', amount: '350' }, // Changed to strings
       ],
       theme: {
         primary: '#1e40af',
@@ -321,8 +342,9 @@ const Recommendations = () => {
       id: 3,
       name: 'ICICI Amazon Pay',
       image: '/placeholder.svg',
-      returnPercentage: 6.8,
-      currentCardReturn: 2.1,
+      totalReturn: '₹2,500',
+      currentReturn: '₹900',
+      returnValue: '2500', // Changed to string
       isTopRecommended: false,
       keyBenefits: [
         '5% cashback on Amazon',
@@ -331,9 +353,9 @@ const Recommendations = () => {
         'Amazon Prime membership'
       ],
       returnBreakup: [
-        { category: 'Shopping', percentage: 5, amount: 750 },
-        { category: 'Bills', percentage: 2, amount: 100 },
-        { category: 'Others', percentage: 1, amount: 350 },
+        { category: 'Shopping', percentage: '5', amount: '750' }, // Changed to strings
+        { category: 'Bills', percentage: '2', amount: '100' }, // Changed to strings
+        { category: 'Others', percentage: '1', amount: '350' }, // Changed to strings
       ],
       theme: {
         primary: '#ff9900',
@@ -545,16 +567,16 @@ const Recommendations = () => {
                     <div>
                       <h3 className="text-xl font-bold mb-3 text-gray-800">{card.name}</h3>
 
-                      {/* Return Percentage */}
+                      {/* Total Return */}
                       <div className="flex items-center gap-3 mb-5">
                         <div className="text-4xl font-bold text-green-600">
-                          {card.returnPercentage}%
+                          {card.totalReturn}
                         </div>
                         <div className="text-sm text-gray-600">
                           <div>Total Return</div>
-                          {card.currentCardReturn && (
+                          {card.currentReturn && (
                             <div className="text-red-500">
-                              vs {card.currentCardReturn}% (current)
+                              vs {card.currentReturn} (current)
                             </div>
                           )}
                         </div>

@@ -194,6 +194,18 @@ const Index = () => {
                                                         formData.append(`files`, fileWithPassword.file);
                                                     });
 
+                                                    // Extract card names from filesWithPasswords
+                                                    const cardNames = filesWithPasswords
+                                                        .filter(file => file.cardName) // Filter out files without card names
+                                                        .map(file => file.cardName);   // Extract card names
+
+                                                    // Store card names in sessionStorage for use in Recommendations.tsx
+                                                    if (cardNames.length > 0) {
+                                                        sessionStorage.setItem('selectedCardNames', JSON.stringify(cardNames));
+                                                    }
+
+                                                    // Note: cardName is not passed to the /recommendation API, only to /get-recommendation
+
                                                     // Create a timeout promise to abort the fetch if it takes too long
                                                     const timeoutPromise = new Promise((_, reject) => {
                                                         setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
@@ -591,10 +603,23 @@ const Index = () => {
                                     // Get customerId from sessionStorage
                                     const customerId = sessionStorage.getItem('customerId');
                                     if (customerId) {
+                                        // Extract card names from selectedFiles
+                                        const cardNames = selectedFiles
+                                            .filter(file => file.cardName) // Filter out files without card names
+                                            .map(file => file.cardName);   // Extract card names
+
+                                        // Store card names in sessionStorage for use in Recommendations.tsx
+                                        if (cardNames.length > 0) {
+                                            sessionStorage.setItem('selectedCardNames', JSON.stringify(cardNames));
+                                        }
+
                                         // Create request body
                                         const requestBody = {
-                                            customerId: customerId
+                                            customerId: customerId,
+                                            cardName: cardNames.length > 0 ? cardNames : undefined
                                         };
+
+                                        console.log('Request body for get-recommendations:', requestBody);
 
                                         // Make the API call
                                         fetch(apiUrl, {

@@ -44,8 +44,9 @@ interface CardBenefitsModalProps {
         id: number;
         name: string;
         image: string;
-        returnPercentage: string | number;
-        currentCardReturn: string | number;
+        totalReturn: string;
+        currentReturn: string;
+        returnValue: number;
         isTopRecommended: boolean;
         keyBenefits: string[];
         returnBreakup: Array<{
@@ -67,44 +68,62 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
     // Use API data if available, otherwise use fallback data
     const benefitsData = card.originalData ? {
         eligibility: [
-            {feature: 'Age', detail: card.originalData.eligibilityCriteria.age},
-            {feature: 'Income/TRV', detail: card.originalData.eligibilityCriteria.income_trv},
-            {feature: 'Other Criteria', detail: card.originalData.eligibilityCriteria.others},
+            {feature: 'Age', detail: card.originalData.eligibilityCriteria?.age || 'Not specified'},
+            {feature: 'Income/TRV', detail: card.originalData.eligibilityCriteria?.income_trv || 'Not specified'},
+            {feature: 'Other Criteria', detail: card.originalData.eligibilityCriteria?.others || 'Not specified'},
         ],
         rewards: card.originalData.rewardSummary
-            .filter(reward => reward.rewardCategory !== 'Domestic Lounge' &&
-                             reward.rewardCategory !== 'International Lounge' &&
-                             reward.rewardCategory !== 'TRAVEL')
-            .map(reward => ({
-                feature: reward.rewardCategory,
-                detail: reward.rewardStructures[0].valueForCalculation
-            })),
-        travel: card.originalData.rewardSummary
-            .filter(reward => reward.rewardCategory === 'TRAVEL' ||
-                             reward.rewardCategory === 'FLIGHT(Travel)' ||
-                             reward.rewardCategory === 'HOTEL(Travel)')
-            .map(reward => ({
-                feature: reward.rewardCategory,
-                detail: reward.rewardStructures[0].valueForCalculation
-            })),
-        lounge: [
-            ...card.originalData.rewardSummary
-                .filter(reward => reward.rewardCategory === 'Domestic Lounge')
+            ? card.originalData.rewardSummary
+                .filter(reward => reward.rewardCategory !== 'Domestic Lounge' &&
+                                reward.rewardCategory !== 'International Lounge' &&
+                                reward.rewardCategory !== 'TRAVEL')
                 .map(reward => ({
-                    feature: 'Domestic Lounge',
-                    detail: reward.rewardStructures[0].valueForCalculation
-                })),
-            ...card.originalData.rewardSummary
-                .filter(reward => reward.rewardCategory === 'International Lounge')
-                .map(reward => ({
-                    feature: 'International Lounge',
-                    detail: reward.rewardStructures[0].valueForCalculation
+                    feature: reward.rewardCategory,
+                    detail: reward.rewardStructures && reward.rewardStructures[0]
+                        ? reward.rewardStructures[0].valueForCalculation
+                        : 'Not specified'
                 }))
+            : [],
+        travel: card.originalData.rewardSummary
+            ? card.originalData.rewardSummary
+                .filter(reward => reward.rewardCategory === 'TRAVEL' ||
+                                reward.rewardCategory === 'FLIGHT(Travel)' ||
+                                reward.rewardCategory === 'HOTEL(Travel)')
+                .map(reward => ({
+                    feature: reward.rewardCategory,
+                    detail: reward.rewardStructures && reward.rewardStructures[0]
+                        ? reward.rewardStructures[0].valueForCalculation
+                        : 'Not specified'
+                }))
+            : [],
+        lounge: [
+            ...(card.originalData.rewardSummary
+                ? card.originalData.rewardSummary
+                    .filter(reward => reward.rewardCategory === 'Domestic Lounge')
+                    .map(reward => ({
+                        feature: 'Domestic Lounge',
+                        detail: reward.rewardStructures && reward.rewardStructures[0]
+                            ? reward.rewardStructures[0].valueForCalculation
+                            : 'Not specified'
+                    }))
+                : []),
+            ...(card.originalData.rewardSummary
+                ? card.originalData.rewardSummary
+                    .filter(reward => reward.rewardCategory === 'International Lounge')
+                    .map(reward => ({
+                        feature: 'International Lounge',
+                        detail: reward.rewardStructures && reward.rewardStructures[0]
+                            ? reward.rewardStructures[0].valueForCalculation
+                            : 'Not specified'
+                    }))
+                : [])
         ],
-        benefits: card.originalData.benefits.map(benefit => ({
-            feature: 'Benefit',
-            detail: benefit.title
-        })),
+        benefits: card.originalData.benefits
+            ? card.originalData.benefits.map(benefit => ({
+                feature: 'Benefit',
+                detail: benefit.title || 'Not specified'
+            }))
+            : [],
     } : {
         // Fallback data if originalData is not available
         eligibility: [
@@ -156,7 +175,7 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                             <p className="text-lg opacity-90">Premium Credit Card</p>
                         </div>
                         <div className="text-right">
-                            <div className="text-3xl font-bold">{card.returnPercentage}</div>
+                            <div className="text-3xl font-bold">{card.totalReturn}</div>
                             <div className="text-sm opacity-90">Total Returns</div>
                         </div>
                     </div>
@@ -208,7 +227,7 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                                             className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
                                             <h4 className="font-bold text-gray-800">Total Monthly Returns</h4>
                                             <div className="text-xl font-bold text-green-600">
-                                                {card.returnPercentage}
+                                                {card.totalReturn}
                                             </div>
                                         </div>
                                     </div>
