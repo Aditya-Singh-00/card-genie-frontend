@@ -1,14 +1,13 @@
 import {useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent} from '@/components/ui/card';
-import {Check, File, Upload, X, Lock, Plus} from 'lucide-react';
+import {Check, File, Upload, X, Plus, Loader2} from 'lucide-react';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 
-// Define a type for file with password
+// Define a type for file
 interface FileWithPassword {
     file: File;
-    password: string;
 }
 
 interface FileUploadProps {
@@ -17,17 +16,17 @@ interface FileUploadProps {
 
 const FileUpload = ({onComplete}: FileUploadProps) => {
     const [uploadedFiles, setUploadedFiles] = useState<FileWithPassword[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const files = Array.from(e.target.files);
-            const filesWithPasswords = files.map(file => ({
-                file,
-                password: ''
+            const filesWithoutPasswords = files.map(file => ({
+                file
             }));
             // Limit to maximum 5 files total
             setUploadedFiles(prev => {
-                const newFiles = [...prev, ...filesWithPasswords];
+                const newFiles = [...prev, ...filesWithoutPasswords];
                 return newFiles.slice(0, 5);
             });
 
@@ -38,14 +37,6 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
 
     const removeFile = (index: number) => {
         setUploadedFiles(prev => prev.filter((_, i) => i !== index));
-    };
-
-    const updateFilePassword = (index: number, password: string) => {
-        setUploadedFiles(prev =>
-            prev.map((item, i) =>
-                i === index ? { ...item, password } : item
-            )
-        );
     };
 
     const formatFileSize = (bytes: number) => {
@@ -126,17 +117,6 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
                                             <X className="h-3 w-3"/>
                                         </Button>
                                     </div>
-                                    <div className="mt-1 flex items-center gap-2">
-                                        <Lock className="h-3 w-3 text-gray-600" />
-                                        <Input
-                                            id={`file-password-${index}`}
-                                            type="password"
-                                            placeholder="Password (if protected)"
-                                            value={fileWithPassword.password}
-                                            onChange={(e) => updateFilePassword(index, e.target.value)}
-                                            className="border-gray-300 text-xs h-7 py-0"
-                                        />
-                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -184,11 +164,22 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
                             </div>
 
                             <Button
-                                onClick={() => onComplete(uploadedFiles)}
+                                onClick={() => {
+                                    setIsLoading(true);
+                                    // Call onComplete with the uploaded files
+                                    onComplete(uploadedFiles);
+                                    // Note: The loading state will remain true until the parent component
+                                    // completes its processing and re-renders this component
+                                }}
                                 className="bg-green-600 hover:bg-green-700 text-sm py-1 px-4 h-8"
-                                disabled={uploadedFiles.length === 0}
+                                disabled={uploadedFiles.length === 0 || isLoading}
                             >
-                                Analyze ({uploadedFiles.length} files)
+                                {isLoading ? (
+                                    <div className="flex items-center justify-center">
+                                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                                        Analyzing...
+                                    </div>
+                                ) : `Analyze (${uploadedFiles.length} files)`}
                             </Button>
                         </div>
                     </CardContent>

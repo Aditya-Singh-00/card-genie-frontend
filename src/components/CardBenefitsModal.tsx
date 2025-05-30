@@ -4,13 +4,109 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {CreditCard, Gift, Plane, Shield, Star} from 'lucide-react';
 
+interface RewardStructure {
+  valueForCalculation: string;
+  notes: string;
+}
+
+interface RewardCategory {
+  rewardCategory: string;
+  rewardStructures: RewardStructure[];
+}
+
+interface Benefit {
+  title: string;
+}
+
+interface ReturnBreakup {
+  [key: string]: string;
+}
+
+interface EligibilityCriteria {
+  age: string;
+  income_trv: string;
+  others: string;
+}
+
+interface CardRecommendation {
+  rank: number;
+  cardName: string;
+  totalReturn: string;
+  currentReturn: string;
+  returnBreakup: ReturnBreakup;
+  eligibilityCriteria: EligibilityCriteria;
+  rewardSummary: RewardCategory[];
+  benefits: Benefit[];
+}
+
 interface CardBenefitsModalProps {
-    card: any;
+    card: {
+        id: number;
+        name: string;
+        image: string;
+        returnPercentage: string | number;
+        currentCardReturn: string | number;
+        isTopRecommended: boolean;
+        keyBenefits: string[];
+        returnBreakup: Array<{
+            category: string;
+            percentage: string | number;
+            amount: string | number;
+        }>;
+        theme: {
+            primary: string;
+            secondary: string;
+            gradient: string;
+        };
+        originalData?: CardRecommendation;
+    };
     onClose: () => void;
 }
 
 const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
-    const benefitsData = {
+    // Use API data if available, otherwise use fallback data
+    const benefitsData = card.originalData ? {
+        eligibility: [
+            {feature: 'Age', detail: card.originalData.eligibilityCriteria.age},
+            {feature: 'Income/TRV', detail: card.originalData.eligibilityCriteria.income_trv},
+            {feature: 'Other Criteria', detail: card.originalData.eligibilityCriteria.others},
+        ],
+        rewards: card.originalData.rewardSummary
+            .filter(reward => reward.rewardCategory !== 'Domestic Lounge' &&
+                             reward.rewardCategory !== 'International Lounge' &&
+                             reward.rewardCategory !== 'TRAVEL')
+            .map(reward => ({
+                feature: reward.rewardCategory,
+                detail: reward.rewardStructures[0].valueForCalculation
+            })),
+        travel: card.originalData.rewardSummary
+            .filter(reward => reward.rewardCategory === 'TRAVEL' ||
+                             reward.rewardCategory === 'FLIGHT(Travel)' ||
+                             reward.rewardCategory === 'HOTEL(Travel)')
+            .map(reward => ({
+                feature: reward.rewardCategory,
+                detail: reward.rewardStructures[0].valueForCalculation
+            })),
+        lounge: [
+            ...card.originalData.rewardSummary
+                .filter(reward => reward.rewardCategory === 'Domestic Lounge')
+                .map(reward => ({
+                    feature: 'Domestic Lounge',
+                    detail: reward.rewardStructures[0].valueForCalculation
+                })),
+            ...card.originalData.rewardSummary
+                .filter(reward => reward.rewardCategory === 'International Lounge')
+                .map(reward => ({
+                    feature: 'International Lounge',
+                    detail: reward.rewardStructures[0].valueForCalculation
+                }))
+        ],
+        benefits: card.originalData.benefits.map(benefit => ({
+            feature: 'Benefit',
+            detail: benefit.title
+        })),
+    } : {
+        // Fallback data if originalData is not available
         eligibility: [
             {feature: 'Minimum Age', detail: '21 years'},
             {feature: 'Minimum Income', detail: '₹30,000/month'},
@@ -33,7 +129,11 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
             {feature: 'Priority Pass', detail: 'Complimentary membership'},
             {feature: 'Golf Privileges', detail: '12 rounds per year'},
         ],
-        premium: [
+        lounge: [
+            {feature: 'Domestic Lounges', detail: 'Unlimited access'},
+            {feature: 'International Lounges', detail: '4 per quarter'},
+        ],
+        benefits: [
             {feature: 'Concierge Service', detail: '24/7 assistance'},
             {feature: 'Insurance Cover', detail: '₹1 Crore'},
             {feature: 'Emergency Card', detail: '48 hours worldwide'},
@@ -56,14 +156,14 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                             <p className="text-lg opacity-90">Premium Credit Card</p>
                         </div>
                         <div className="text-right">
-                            <div className="text-3xl font-bold">{card.returnPercentage}%</div>
+                            <div className="text-3xl font-bold">{card.returnPercentage}</div>
                             <div className="text-sm opacity-90">Total Returns</div>
                         </div>
                     </div>
                 </div>
 
                 <Tabs defaultValue="returns" className="w-full">
-                    <TabsList className="grid w-full grid-cols-6">
+                    <TabsList className="grid w-full grid-cols-4">
                         <TabsTrigger value="returns" className="flex items-center gap-2">
                             <Gift className="h-4 w-4"/>
                             Returns
@@ -72,21 +172,13 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                             <Shield className="h-4 w-4"/>
                             Eligibility
                         </TabsTrigger>
-                        <TabsTrigger value="fees" className="flex items-center gap-2">
-                            <CreditCard className="h-4 w-4"/>
-                            Fees
-                        </TabsTrigger>
                         <TabsTrigger value="rewards" className="flex items-center gap-2">
                             <Star className="h-4 w-4"/>
                             Rewards
                         </TabsTrigger>
-                        <TabsTrigger value="travel" className="flex items-center gap-2">
-                            <Plane className="h-4 w-4"/>
-                            Travel
-                        </TabsTrigger>
-                        <TabsTrigger value="premium" className="flex items-center gap-2">
+                        <TabsTrigger value="benefits" className="flex items-center gap-2">
                             <Shield className="h-4 w-4"/>
-                            Premium
+                            Benefits
                         </TabsTrigger>
                     </TabsList>
 
@@ -102,10 +194,10 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                                              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                             <div>
                                                 <h4 className="font-semibold text-gray-800">{item.category}</h4>
-                                                <p className="text-sm text-gray-600">{item.percentage}% rewards rate</p>
+                                                <p className="text-sm text-gray-600">{item.percentage} rewards rate</p>
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-lg font-bold text-green-600">₹{item.amount}</div>
+                                                <div className="text-lg font-bold text-green-600">{item.amount}</div>
                                                 <div className="text-sm text-gray-600">Monthly returns</div>
                                             </div>
                                         </div>
@@ -116,7 +208,7 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                                             className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
                                             <h4 className="font-bold text-gray-800">Total Monthly Returns</h4>
                                             <div className="text-xl font-bold text-green-600">
-                                                ₹{card.returnBreakup.reduce((sum: number, item: any) => sum + item.amount, 0)}
+                                                {card.returnPercentage}
                                             </div>
                                         </div>
                                     </div>
@@ -125,25 +217,60 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                         </Card>
                     </TabsContent>
 
-                    {Object.entries(benefitsData).map(([category, benefits]) => (
-                        <TabsContent key={category} value={category} className="mt-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="capitalize">{category} Details</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {benefits.map((benefit, index) => (
-                                            <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                                                <h4 className="font-semibold text-gray-800 mb-1">{benefit.feature}</h4>
-                                                <p className="text-gray-600">{benefit.detail}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                    ))}
+                    <TabsContent value="eligibility" className="mt-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Eligibility Criteria</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {benefitsData.eligibility.map((benefit, index) => (
+                                        <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                                            <h4 className="font-semibold text-gray-800 mb-1">{benefit.feature}</h4>
+                                            <p className="text-gray-600">{benefit.detail}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="rewards" className="mt-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Reward Structure</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {benefitsData.rewards.map((benefit, index) => (
+                                        <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                                            <h4 className="font-semibold text-gray-800 mb-1">{benefit.feature}</h4>
+                                            <p className="text-gray-600">{benefit.detail}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+
+                    <TabsContent value="benefits" className="mt-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Additional Benefits</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {benefitsData.benefits.map((benefit, index) => (
+                                        <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                                            <h4 className="font-semibold text-gray-800 mb-1">{benefit.feature}</h4>
+                                            <p className="text-gray-600">{benefit.detail}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
                 </Tabs>
 
                 <div className="flex gap-4 mt-6">

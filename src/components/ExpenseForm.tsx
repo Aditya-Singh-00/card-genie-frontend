@@ -6,6 +6,7 @@ import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {Badge} from '@/components/ui/badge';
 import {RadioGroup, RadioGroupItem} from '@/components/ui/radio-group';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
+import {Loader2} from 'lucide-react';
 
 interface ExpenseFormProps {
     onComplete: (data?: {
@@ -33,6 +34,7 @@ const ExpenseForm = ({onComplete}: ExpenseFormProps) => {
     const [selectedBrands, setSelectedBrands] = useState<Record<string, string[]>>({});
     const [hasCreditCard, setHasCreditCard] = useState<boolean | null>(null);
     const [creditLimit, setCreditLimit] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const categoryBrands = {
         travel: ['Uber', 'Ola', 'MakeMyTrip', 'Rapido', 'Cleartrip', 'IRCTC', 'RedBus', 'Paytm'],
@@ -187,16 +189,26 @@ const ExpenseForm = ({onComplete}: ExpenseFormProps) => {
                             Total Monthly Expenses: ₹{totalExpenses.toLocaleString()}
                         </div>
                         <Button
-                            onClick={() => onComplete({
-                                expenses,
-                                selectedBrands,
-                                hasCreditCard,
-                                creditLimit
-                            })}
+                            onClick={() => {
+                                setIsLoading(true);
+                                onComplete({
+                                    expenses,
+                                    selectedBrands,
+                                    hasCreditCard,
+                                    creditLimit
+                                });
+                                // Note: The loading state will remain true until the parent component
+                                // completes its processing and re-renders this component
+                            }}
                             className="w-full bg-green-600 hover:bg-green-700 text-lg py-3"
-                            disabled={totalExpenses === 0 || hasCreditCard === null || (hasCreditCard && !creditLimit)}
+                            disabled={totalExpenses === 0 || hasCreditCard === null || (hasCreditCard && !creditLimit) || isLoading}
                         >
-                            Get My Recommendations
+                            {isLoading ? (
+                                <div className="flex items-center justify-center">
+                                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                    Getting Recommendations...
+                                </div>
+                            ) : 'Get My Recommendations'}
                         </Button>
                     </CardContent>
                 </Card>

@@ -25,16 +25,52 @@ interface ApiResponseData {
   category_breakdown: Record<string, CategoryData>;
 }
 
+interface RewardStructure {
+  valueForCalculation: string;
+  notes: string;
+}
+
+interface RewardCategory {
+  rewardCategory: string;
+  rewardStructures: RewardStructure[];
+}
+
+interface Benefit {
+  title: string;
+}
+
+interface ReturnBreakup {
+  [key: string]: string;
+}
+
+interface EligibilityCriteria {
+  age: string;
+  income_trv: string;
+  others: string;
+}
+
+interface CardRecommendation {
+  rank: number;
+  cardName: string;
+  totalReturn: string;
+  currentReturn: string;
+  returnBreakup: ReturnBreakup;
+  eligibilityCriteria: EligibilityCriteria;
+  rewardSummary: RewardCategory[];
+  benefits: Benefit[];
+}
+
 const Recommendations = () => {
   const navigate = useNavigate();
   const [selectedCard, setSelectedCard] = useState<any>(null);
   const [userFormData, setUserFormData] = useState<UserFormData | null>(null);
   const [apiResponseData, setApiResponseData] = useState<ApiResponseData | null>(null);
+  const [cardRecommendations, setCardRecommendations] = useState<CardRecommendation[]>([]);
 
-  // Retrieve user form data and API response data from localStorage when component mounts
+  // Retrieve user form data and API response data from sessionStorage when component mounts
   useEffect(() => {
     // Get user form data
-    const storedData = localStorage.getItem('userFormData');
+    const storedData = sessionStorage.getItem('userFormData');
     if (storedData) {
       try {
         const parsedData = JSON.parse(storedData);
@@ -45,7 +81,7 @@ const Recommendations = () => {
     }
 
     // Get API response data
-    const storedApiData = localStorage.getItem('apiResponseData');
+    const storedApiData = sessionStorage.getItem('apiResponseData');
     if (storedApiData) {
       try {
         const parsedApiData = JSON.parse(storedApiData);
@@ -54,6 +90,59 @@ const Recommendations = () => {
       } catch (error) {
         console.error('Error parsing API response data:', error);
       }
+    }
+
+    // Get card recommendations data
+    const storedCardRecommendations = sessionStorage.getItem('cardRecommendations');
+    if (storedCardRecommendations) {
+      try {
+        const parsedCardRecommendations = JSON.parse(storedCardRecommendations);
+        setCardRecommendations(parsedCardRecommendations);
+        console.log('Retrieved card recommendations data:', parsedCardRecommendations);
+      } catch (error) {
+        console.error('Error parsing card recommendations data:', error);
+      }
+    }
+
+    // Call the get-recommendation API when the component mounts
+    const apiUrl = 'http://localhost:3003/credit.genie.in/get-recommendations';
+    console.log('Making API call to:', apiUrl);
+
+    // Get customerId from sessionStorage
+    const customerId = sessionStorage.getItem('customerId');
+    if (customerId) {
+      // Create request body
+      const requestBody = {
+        customerId: customerId
+      };
+
+      // Make the API call
+      fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Network response was not ok: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('API response data:', data);
+        // Store the recommendations data in sessionStorage
+        sessionStorage.setItem('cardRecommendations', JSON.stringify(data));
+        // Update the state with the new recommendations
+        setCardRecommendations(data);
+      })
+      .catch(error => {
+        console.error('Error getting recommendations:', error);
+      });
+    } else {
+      console.error('No customerId found in sessionStorage');
     }
   }, []);
 
@@ -112,7 +201,73 @@ const Recommendations = () => {
   // Get expense data from API or use mock data
   const expenseData = getExpenseDataFromApi();
 
-  const recommendedCards = [
+  // Function to map API response data to the format expected by the component
+  const mapApiDataToCardFormat = (apiData: CardRecommendation[]) => {
+    if (!apiData || apiData.length === 0) {
+      return [];
+    }
+
+    return apiData.map((card, index) => {
+      // Parse the totalReturn string to get a numeric value (remove ₹ and convert to number)
+      const totalReturnValue = parseFloat(card.totalReturn.replace('₹', '').replace(',', ''));
+
+      // Get top 4 return categories
+      const returnBreakupEntries = Object.entries(card.returnBreakup)
+        .filter(([_, value]) => value !== '₹0.00')
+        .map(([category, value]) => ({
+          category,
+          value: parseFloat(value.replace('₹', '').replace(',', '')),
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 4);
+
+      // Get top 4 benefits
+      const topBenefits = card.benefits.slice(0, 4).map(benefit => benefit.title);
+
+      // Determine card theme based on rank
+      let theme;
+      if (index === 0) {
+        theme = {
+          primary: '#1a1a1a',
+          secondary: '#FFD700',
+          gradient: 'from-gray-900 to-black'
+        };
+      } else if (index === 1) {
+        theme = {
+          primary: '#1e40af',
+          secondary: '#3b82f6',
+          gradient: 'from-blue-900 to-blue-600'
+        };
+      } else {
+        theme = {
+          primary: '#ff9900',
+          secondary: '#232f3e',
+          gradient: 'from-orange-600 to-gray-800'
+        };
+      }
+
+      return {
+        id: card.rank,
+        name: card.cardName,
+        image: '/placeholder.svg',
+        returnPercentage: parseFloat(totalReturnValue.toFixed(1)),
+        currentCardReturn: parseFloat(card.currentReturn.replace('₹', '').replace(',', '')),
+        isTopRecommended: index === 0, // First card is top recommended
+        keyBenefits: topBenefits.length > 0 ? topBenefits : ['No specific benefits listed'],
+        returnBreakup: returnBreakupEntries.map(entry => ({
+          category: entry.category,
+          percentage: Math.round(entry.value / totalReturnValue * 100),
+          amount: entry.value
+        })),
+        theme,
+        // Include original API data for use in the modal
+        originalData: card
+      };
+    });
+  };
+
+  // Fallback data in case the API call fails or returns no data
+  const fallbackCards = [
     {
       id: 1,
       name: 'HDFC Diners Club Black',
@@ -188,8 +343,13 @@ const Recommendations = () => {
     },
   ];
 
+  // Use API data if available, otherwise use fallback data
+  const recommendedCards = cardRecommendations.length > 0
+    ? mapApiDataToCardFormat(cardRecommendations)
+    : fallbackCards;
+
   // Calculate total expense from the expense data
-  const totalExpense = expenseData.reduce((sum, item) => sum + item.value, 0);
+  const totalExpense = ""//expenseData.reduce((sum, item) => sum + item.value, 0);
 
   // Find the top two expense categories
   const sortedExpenses = [...expenseData].sort((a, b) => b.value - a.value);
@@ -302,9 +462,7 @@ const Recommendations = () => {
                       Based on your spending pattern of ₹{totalExpense.toLocaleString()}/month,
                       {topCategory && secondCategory ? (
                         <>
-                          you spend most on {topCategory.name} ({topCategory.percentage?.toFixed(1) || ((topCategory.value/totalExpense)*100).toFixed(1)}%)
-                          and {secondCategory.name} ({secondCategory.percentage?.toFixed(1) || ((secondCategory.value/totalExpense)*100).toFixed(1)}%).
-                        </>
+                          </>
                       ) : (
                         <>
                           your spending is distributed across various categories.
