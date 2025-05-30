@@ -1,16 +1,47 @@
 import {useEffect, useState} from 'react';
 import {Button} from '@/components/ui/button';
-import {Card, CardContent} from '@/components/ui/card';
-import {Calculator, CreditCard, DollarSign, Lock, TrendingUp, Upload, Users, Zap} from 'lucide-react';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {Calculator, Check, CreditCard, DollarSign, Lock, TrendingUp, Upload, Users, Zap} from 'lucide-react';
 import {useNavigate} from 'react-router-dom';
 import ExpenseForm from '@/components/ExpenseForm';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
+import FileUpload from '@/components/FileUpload';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import SpendingAnalysis from '@/components/SpendingAnalysis';
+
+// Define the FileWithPassword interface to match the one in FileUpload.tsx
+interface FileWithPassword {
+    file: File;
+    password: string;
+}
+
+interface CategoryData {
+    amount: number;
+    percentage: number;
+    count: number;
+}
 
 const Index = () => {
     const [activeAction, setActiveAction] = useState<'upload' | 'manual' | null>('upload');
-    const [documentPassword, setDocumentPassword] = useState<string>('');
+    const [selectedFiles, setSelectedFiles] = useState<FileWithPassword[]>([]);
+    const [uploadComplete, setUploadComplete] = useState<boolean>(false);
+    const [categoryBreakdown, setCategoryBreakdown] = useState<Record<string, CategoryData> | null>(null);
     const navigate = useNavigate();
+
+    // Define colors for different categories
+    const categoryColors: Record<string, string> = {
+        'FUEL': '#F59E0B',
+        'DINING': '#06B6D4',
+        'HEALTH': '#10B981',
+        'SHOPPING': '#8B5CF6',
+        'BILLS': '#EF4444',
+        'OTHERS': '#6B7280',
+        'TRAVEL': '#3B82F6',
+        'ENTERTAINMENT': '#EC4899',
+        'GROCERIES': '#84CC16',
+        'UTILITIES': '#14B8A6'
+    };
 
     // Check for customerId in sessionStorage when component mounts
     useEffect(() => {
@@ -135,48 +166,34 @@ const Index = () => {
                                     activeAction === 'upload' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
                                 }`}>
                                     <CardContent className="p-8 text-center">
-                                        <Upload className="h-16 w-16 text-blue-600 mx-auto mb-4"/>
-                                        <h4 className="text-xl font-semibold mb-3 text-gray-800">Upload Previous
-                                            Statements</h4>
-                                        <p className="text-gray-600 mb-4">
-                                            Upload your credit card statements for accurate analysis. We recommend at
-                                            least 3 months of data.
-                                        </p>
-                                        <input
-                                            type="file"
-                                            multiple
-                                            accept=".pdf"
-                                            className="hidden"
-                                            id="direct-file-upload"
-                                            onChange={(e) => {
-                                                if (e.target.files && e.target.files.length > 0) {
-                                                    // Handle file selection directly
-                                                    const files = Array.from(e.target.files);
+                                        {!categoryBreakdown ? (
+                                            <FileUpload
+                                                onComplete={(filesWithPasswords) => {
+                                                    // Update selectedFiles state
+                                                    setSelectedFiles(filesWithPasswords);
+                                                    setUploadComplete(true);
+                                                    console.log('Files selected:', filesWithPasswords.map(f => f.file.name));
+
+                                                    // Make API call to upload files directly
+                                                    const apiUrl = 'http://localhost:3003/credit.genie.in/recommendation';
+                                                    console.log('Making API call to:', apiUrl);
+
+                                                    // Create FormData object
+                                                    const formData = new FormData();
 
                                                     // Get customerId from sessionStorage
                                                     const customerId = sessionStorage.getItem('customerId');
-
-                                                    // Here you would typically upload the files to your server
-                                                    // For now, we'll just simulate an API call with the password
-
-                                                    // Create FormData to send files
-                                                    const formData = new FormData();
-                                                    files.forEach((file, index) => {
-                                                        formData.append(`file${index}`, file);
-                                                    });
-
-                                                    // Add customerId and password to formData
-                                                    formData.append('customerId', customerId || '');
-                                                    if (documentPassword) {
-                                                        formData.append('documentPassword', documentPassword);
+                                                    if (customerId) {
+                                                        formData.append('customerId', customerId);
                                                     }
 
-                                                    console.log('Files selected:', files.map(f => f.name));
-                                                    console.log('Document password provided:', documentPassword ? 'Yes' : 'No');
-
-                                                    // Make API call to upload files and get recommendations
-                                                    const apiUrl = 'http://localhost:3003/credit.genie.in/recommendation';
-                                                    console.log('Making API call to:', apiUrl);
+                                                    // Add files and their passwords to FormData
+                                                    filesWithPasswords.forEach((fileWithPassword, index) => {
+                                                        formData.append(`files`, fileWithPassword.file);
+                                                        if (fileWithPassword.password) {
+                                                            formData.append(`passwords[${index}]`, fileWithPassword.password);
+                                                        }
+                                                    });
 
                                                     // Create a timeout promise to abort the fetch if it takes too long
                                                     const timeoutPromise = new Promise((_, reject) => {
@@ -194,10 +211,9 @@ const Index = () => {
                                                                 // Add additional CORS headers
                                                                 'Access-Control-Allow-Origin': '*',
                                                                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                                                                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                                                                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                                                                'Authorization': 'authToken',
                                                             },
-                                                            // Add credentials to include cookies in the request
-                                                            credentials: 'include',
                                                             body: formData,
                                                         }),
                                                         timeoutPromise
@@ -211,8 +227,11 @@ const Index = () => {
                                                     })
                                                     .then(data => {
                                                         console.log('API response data:', data);
-                                                        // Continue with navigation after successful API call
-                                                        navigate('/recommendations');
+                                                        // Store the API response data in localStorage
+                                                        localStorage.setItem('apiResponseData', JSON.stringify(data));
+
+                                                        // Set state to show the category breakdown
+                                                        setCategoryBreakdown(data.category_breakdown);
                                                     })
                                                     .catch(error => {
                                                         console.error('Error uploading files:', error);
@@ -226,41 +245,48 @@ const Index = () => {
                                                             console.error('Server error: The API server returned an error response.');
                                                         }
 
-                                                        // Navigate to recommendations anyway for demonstration purposes
-                                                        navigate('/recommendations');
+                                                        // For demo purposes, set mock category breakdown data
+                                                        setCategoryBreakdown({
+                                                            "FUEL": {
+                                                                "amount": 2415,
+                                                                "percentage": 34.8,
+                                                                "count": 3
+                                                            },
+                                                            "DINING": {
+                                                                "amount": 144.9,
+                                                                "percentage": 2.1,
+                                                                "count": 1
+                                                            },
+                                                            "HEALTH": {
+                                                                "amount": 3863,
+                                                                "percentage": 55.8,
+                                                                "count": 3
+                                                            }
+                                                        });
                                                     });
-                                                }
-                                            }}
-                                        />
-                                        <Button
-                                            className="w-full bg-blue-600 hover:bg-blue-700 mb-4"
-                                            onClick={() => {
-                                                document.getElementById('direct-file-upload')?.click();
-                                            }}
-                                        >
-                                            Choose Files
-                                        </Button>
-
-                                        {/* Password input for protected documents */}
-                                        <div className="mt-4">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <Lock className="h-4 w-4 text-gray-600" />
-                                                <Label htmlFor="document-password" className="text-sm text-gray-700">
-                                                    Document Password (if protected)
-                                                </Label>
-                                            </div>
-                                            <Input
-                                                id="document-password"
-                                                type="password"
-                                                placeholder="Enter password if your documents are protected"
-                                                value={documentPassword}
-                                                onChange={(e) => setDocumentPassword(e.target.value)}
-                                                className="border-gray-300"
+                                                }}
                                             />
-                                            <p className="text-xs text-gray-500 mt-1">
-                                                Leave blank if your documents are not password protected
-                                            </p>
-                                        </div>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                <div className="p-3 bg-green-50 rounded-lg border border-green-200 text-center">
+                                                    <Check className="h-6 w-6 text-green-600 mx-auto mb-2" />
+                                                    <p className="text-green-700 font-medium">Files analyzed successfully!</p>
+                                                    <p className="text-green-600 text-sm">View your spending analysis below</p>
+                                                </div>
+
+                                                <Button
+                                                    variant="outline"
+                                                    className="w-full"
+                                                    onClick={() => {
+                                                        setSelectedFiles([]);
+                                                        setUploadComplete(false);
+                                                        setCategoryBreakdown(null);
+                                                    }}
+                                                >
+                                                    Upload Different Files
+                                                </Button>
+                                            </div>
+                                        )}
                                     </CardContent>
                                 </Card>
 
@@ -442,6 +468,67 @@ const Index = () => {
                     )}
                 </div>
             </section>
+
+            {/* Spending Analysis Section */}
+            {categoryBreakdown && (
+                <section className="container mx-auto px-4 py-8">
+                    <SpendingAnalysis
+                        categoryBreakdown={categoryBreakdown}
+                        categoryColors={categoryColors}
+                    />
+                    <div className="max-w-4xl mx-auto mt-6">
+                        <Button
+                            className="w-full bg-green-600 hover:bg-green-700"
+                            onClick={() => {
+                                // Make API call to get recommendations
+                                const apiUrl = 'http://localhost:3003/credit.genie.in/recommendation';
+                                console.log('Making API call to:', apiUrl);
+
+                                // Get customerId from sessionStorage
+                                const customerId = sessionStorage.getItem('customerId');
+                                if (customerId) {
+                                    // Create request body
+                                    const requestBody = {
+                                        customerId: customerId
+                                    };
+
+                                    // Make the API call
+                                    fetch(apiUrl, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Accept': 'application/json',
+                                        },
+                                        body: JSON.stringify(requestBody),
+                                    })
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error(`Network response was not ok: ${response.status}`);
+                                        }
+                                        return response.json();
+                                    })
+                                    .then(data => {
+                                        console.log('API response data:', data);
+                                        // Navigate to recommendations page
+                                        navigate('/recommendations');
+                                    })
+                                    .catch(error => {
+                                        console.error('Error getting recommendations:', error);
+                                        // Navigate to recommendations page anyway for demo purposes
+                                        navigate('/recommendations');
+                                    });
+                                } else {
+                                    console.error('No customerId found in sessionStorage');
+                                    // Navigate to recommendations page anyway for demo purposes
+                                    navigate('/recommendations');
+                                }
+                            }}
+                        >
+                            Get Recommendations
+                        </Button>
+                    </div>
+                </section>
+            )}
 
             {/* Features Section */}
             <section className="bg-white/50 backdrop-blur-sm py-16">

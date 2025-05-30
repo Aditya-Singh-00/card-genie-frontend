@@ -15,13 +15,25 @@ interface UserFormData {
   creditLimit: string;
 }
 
+interface CategoryData {
+  amount: number;
+  percentage: number;
+  count: number;
+}
+
+interface ApiResponseData {
+  category_breakdown: Record<string, CategoryData>;
+}
+
 const Recommendations = () => {
   const navigate = useNavigate();
   const [selectedCard, setSelectedCard] = useState<any>(null);
   const [userFormData, setUserFormData] = useState<UserFormData | null>(null);
+  const [apiResponseData, setApiResponseData] = useState<ApiResponseData | null>(null);
 
-  // Retrieve user form data from localStorage when component mounts
+  // Retrieve user form data and API response data from localStorage when component mounts
   useEffect(() => {
+    // Get user form data
     const storedData = localStorage.getItem('userFormData');
     if (storedData) {
       try {
@@ -29,6 +41,18 @@ const Recommendations = () => {
         setUserFormData(parsedData);
       } catch (error) {
         console.error('Error parsing user form data:', error);
+      }
+    }
+
+    // Get API response data
+    const storedApiData = localStorage.getItem('apiResponseData');
+    if (storedApiData) {
+      try {
+        const parsedApiData = JSON.parse(storedApiData);
+        setApiResponseData(parsedApiData);
+        console.log('Retrieved API response data:', parsedApiData);
+      } catch (error) {
+        console.error('Error parsing API response data:', error);
       }
     }
   }, []);
@@ -47,15 +71,46 @@ const Recommendations = () => {
     }
   };
 
-  // Mock data - in real app this would come from API
-  const expenseData = [
-    { name: 'Shopping', value: 15000, color: '#8B5CF6' },
-    { name: 'Food & Dining', value: 12000, color: '#06B6D4' },
-    { name: 'Travel', value: 8000, color: '#10B981' },
-    { name: 'Fuel', value: 6000, color: '#F59E0B' },
-    { name: 'Bills', value: 5000, color: '#EF4444' },
-    { name: 'Others', value: 4000, color: '#6B7280' },
-  ];
+  // Define colors for different categories
+  const categoryColors: Record<string, string> = {
+    'FUEL': '#F59E0B',
+    'DINING': '#06B6D4',
+    'HEALTH': '#10B981',
+    'SHOPPING': '#8B5CF6',
+    'BILLS': '#EF4444',
+    'OTHERS': '#6B7280',
+    'TRAVEL': '#3B82F6',
+    'ENTERTAINMENT': '#EC4899',
+    'GROCERIES': '#84CC16',
+    'UTILITIES': '#14B8A6'
+  };
+
+  // Transform API response data into the format expected by the pie chart
+  const getExpenseDataFromApi = () => {
+    if (!apiResponseData || !apiResponseData.category_breakdown) {
+      // Return mock data if API data is not available
+      return [
+        { name: 'Shopping', value: 15000, color: '#8B5CF6' },
+        { name: 'Food & Dining', value: 12000, color: '#06B6D4' },
+        { name: 'Travel', value: 8000, color: '#10B981' },
+        { name: 'Fuel', value: 6000, color: '#F59E0B' },
+        { name: 'Bills', value: 5000, color: '#EF4444' },
+        { name: 'Others', value: 4000, color: '#6B7280' },
+      ];
+    }
+
+    // Transform category_breakdown data into the format expected by the pie chart
+    return Object.entries(apiResponseData.category_breakdown).map(([category, data]) => ({
+      name: category.charAt(0) + category.slice(1).toLowerCase(), // Capitalize first letter, lowercase rest
+      value: data.amount,
+      color: categoryColors[category] || '#6B7280', // Use default color if category color is not defined
+      percentage: data.percentage,
+      count: data.count
+    }));
+  };
+
+  // Get expense data from API or use mock data
+  const expenseData = getExpenseDataFromApi();
 
   const recommendedCards = [
     {
@@ -133,7 +188,13 @@ const Recommendations = () => {
     },
   ];
 
+  // Calculate total expense from the expense data
   const totalExpense = expenseData.reduce((sum, item) => sum + item.value, 0);
+
+  // Find the top two expense categories
+  const sortedExpenses = [...expenseData].sort((a, b) => b.value - a.value);
+  const topCategory = sortedExpenses.length > 0 ? sortedExpenses[0] : null;
+  const secondCategory = sortedExpenses.length > 1 ? sortedExpenses[1] : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -238,8 +299,17 @@ const Recommendations = () => {
                   <div className="mt-[30px] p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <h4 className="font-semibold text-blue-800 mb-2">AI Insights</h4>
                     <p className="text-blue-700 mb-3">
-                      Based on your spending pattern of ₹{totalExpense.toLocaleString()}/month, you spend most on shopping ({((expenseData[0].value/totalExpense)*100).toFixed(1)}%)
-                      and food & dining ({((expenseData[1].value/totalExpense)*100).toFixed(1)}%).
+                      Based on your spending pattern of ₹{totalExpense.toLocaleString()}/month,
+                      {topCategory && secondCategory ? (
+                        <>
+                          you spend most on {topCategory.name} ({topCategory.percentage?.toFixed(1) || ((topCategory.value/totalExpense)*100).toFixed(1)}%)
+                          and {secondCategory.name} ({secondCategory.percentage?.toFixed(1) || ((secondCategory.value/totalExpense)*100).toFixed(1)}%).
+                        </>
+                      ) : (
+                        <>
+                          your spending is distributed across various categories.
+                        </>
+                      )}
                       Our recommendations focus on maximizing rewards in these categories.
                     </p>
 
