@@ -4,9 +4,12 @@ import {Card, CardContent} from '@/components/ui/card';
 import {Calculator, CreditCard, DollarSign, Lock, TrendingUp, Upload, Users, Zap} from 'lucide-react';
 import {useNavigate} from 'react-router-dom';
 import ExpenseForm from '@/components/ExpenseForm';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
 
 const Index = () => {
     const [activeAction, setActiveAction] = useState<'upload' | 'manual' | null>('upload');
+    const [documentPassword, setDocumentPassword] = useState<string>('');
     const navigate = useNavigate();
 
     // Check for customerId in sessionStorage when component mounts
@@ -86,7 +89,7 @@ const Index = () => {
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                            Card Genie
+                            Credit Card Genie
                         </h1>
                     </div>
                 </div>
@@ -148,20 +151,116 @@ const Index = () => {
                                             onChange={(e) => {
                                                 if (e.target.files && e.target.files.length > 0) {
                                                     // Handle file selection directly
-                                                    // You would typically process the files here
-                                                    // For now, we'll just navigate to recommendations
-                                                    navigate('/recommendations');
+                                                    const files = Array.from(e.target.files);
+
+                                                    // Get customerId from sessionStorage
+                                                    const customerId = sessionStorage.getItem('customerId');
+
+                                                    // Here you would typically upload the files to your server
+                                                    // For now, we'll just simulate an API call with the password
+
+                                                    // Create FormData to send files
+                                                    const formData = new FormData();
+                                                    files.forEach((file, index) => {
+                                                        formData.append(`file${index}`, file);
+                                                    });
+
+                                                    // Add customerId and password to formData
+                                                    formData.append('customerId', customerId || '');
+                                                    if (documentPassword) {
+                                                        formData.append('documentPassword', documentPassword);
+                                                    }
+
+                                                    console.log('Files selected:', files.map(f => f.name));
+                                                    console.log('Document password provided:', documentPassword ? 'Yes' : 'No');
+
+                                                    // Make API call to upload files and get recommendations
+                                                    const apiUrl = 'http://localhost:3003/credit.genie.in/recommendation';
+                                                    console.log('Making API call to:', apiUrl);
+
+                                                    // Create a timeout promise to abort the fetch if it takes too long
+                                                    const timeoutPromise = new Promise((_, reject) => {
+                                                        setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+                                                    });
+
+                                                    // Use Promise.race to implement a timeout
+                                                    Promise.race([
+                                                        fetch(apiUrl, {
+                                                            method: 'POST',
+                                                            // Don't set Content-Type header when sending FormData
+                                                            // The browser will set it automatically with the correct boundary
+                                                            headers: {
+                                                                'Accept': 'application/json',
+                                                                // Add additional CORS headers
+                                                                'Access-Control-Allow-Origin': '*',
+                                                                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                                                                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                                                            },
+                                                            // Add credentials to include cookies in the request
+                                                            credentials: 'include',
+                                                            body: formData,
+                                                        }),
+                                                        timeoutPromise
+                                                    ])
+                                                    .then((response: any) => {
+                                                        console.log('API response status:', response.status);
+                                                        if (!response.ok) {
+                                                            throw new Error(`Network response was not ok: ${response.status}`);
+                                                        }
+                                                        return response.json();
+                                                    })
+                                                    .then(data => {
+                                                        console.log('API response data:', data);
+                                                        // Continue with navigation after successful API call
+                                                        navigate('/recommendations');
+                                                    })
+                                                    .catch(error => {
+                                                        console.error('Error uploading files:', error);
+
+                                                        // Log more detailed error information
+                                                        if (error.message.includes('timeout')) {
+                                                            console.error('Timeout error: The API server took too long to respond.');
+                                                        } else if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                                                            console.error('Network error: The API server might be down or unreachable.');
+                                                        } else if (error.message.includes('Network response was not ok')) {
+                                                            console.error('Server error: The API server returned an error response.');
+                                                        }
+
+                                                        // Navigate to recommendations anyway for demonstration purposes
+                                                        navigate('/recommendations');
+                                                    });
                                                 }
                                             }}
                                         />
                                         <Button
-                                            className="w-full bg-blue-600 hover:bg-blue-700"
+                                            className="w-full bg-blue-600 hover:bg-blue-700 mb-4"
                                             onClick={() => {
                                                 document.getElementById('direct-file-upload')?.click();
                                             }}
                                         >
                                             Choose Files
                                         </Button>
+
+                                        {/* Password input for protected documents */}
+                                        <div className="mt-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Lock className="h-4 w-4 text-gray-600" />
+                                                <Label htmlFor="document-password" className="text-sm text-gray-700">
+                                                    Document Password (if protected)
+                                                </Label>
+                                            </div>
+                                            <Input
+                                                id="document-password"
+                                                type="password"
+                                                placeholder="Enter password if your documents are protected"
+                                                value={documentPassword}
+                                                onChange={(e) => setDocumentPassword(e.target.value)}
+                                                className="border-gray-300"
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Leave blank if your documents are not password protected
+                                            </p>
+                                        </div>
                                     </CardContent>
                                 </Card>
 
@@ -214,21 +313,6 @@ const Index = () => {
                                                 subCategory: data.selectedBrands[category] || []
                                             }));
 
-                                        // Map income range values to the required format
-                                        let formattedIncomeRange;
-                                        switch (data.incomeRange) {
-                                            case 'below-50k':
-                                                formattedIncomeRange = 'Below 50 Thousand';
-                                                break;
-                                            case '50k-2l':
-                                                formattedIncomeRange = '50 Thousand to 1 Lakh';
-                                                break;
-                                            case 'above-2l':
-                                                formattedIncomeRange = 'Above 1 Lakh';
-                                                break;
-                                            default:
-                                                formattedIncomeRange = data.incomeRange;
-                                        }
 
                                         // Map credit limit values to the required format
                                         let formattedCreditLimit;
@@ -258,10 +342,10 @@ const Index = () => {
                                         // Prepare the payload for the API
                                         const payload = {
                                             spendCategory,
-                                            incomeRange: formattedIncomeRange,
                                             hasCreditCard: data.hasCreditCard,
                                             creditLimit: formattedCreditLimit,
-                                            customerId: customerId || '' // Include customerId in the payload
+                                            customerId: customerId || '', // Include customerId in the payload
+                                            documentPassword: documentPassword || undefined // Include document password if provided
                                         };
 
                                         // Make the API call
@@ -331,7 +415,7 @@ const Index = () => {
                                                         'Content-Type': 'application/json',
                                                         'Accept': 'application/json'
                                                     },
-                                                    body: JSON.stringify(payload), // payload already includes customerId
+                                                    body: JSON.stringify(payload), // payload already includes customerId and documentPassword
                                                 })
                                                     .then(response => {
                                                         console.log('Fallback API response status:', response.status);

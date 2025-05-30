@@ -11,7 +11,6 @@ interface ExpenseFormProps {
     onComplete: (data?: {
         expenses: Record<string, number>;
         selectedBrands: Record<string, string[]>;
-        incomeRange: string;
         hasCreditCard: boolean | null;
         creditLimit: string;
     }) => void;
@@ -32,7 +31,6 @@ const ExpenseForm = ({onComplete}: ExpenseFormProps) => {
     });
 
     const [selectedBrands, setSelectedBrands] = useState<Record<string, string[]>>({});
-    const [incomeRange, setIncomeRange] = useState<string>('');
     const [hasCreditCard, setHasCreditCard] = useState<boolean | null>(null);
     const [creditLimit, setCreditLimit] = useState<string>('');
 
@@ -92,22 +90,6 @@ const ExpenseForm = ({onComplete}: ExpenseFormProps) => {
                     <CardTitle className="text-blue-800">Personal Financial Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    {/* Income Range */}
-                    <div className="space-y-2">
-                        <Label htmlFor="income-range" className="text-lg font-medium">
-                            Monthly Income Range
-                        </Label>
-                        <Select value={incomeRange} onValueChange={setIncomeRange}>
-                            <SelectTrigger id="income-range" className="w-full">
-                                <SelectValue placeholder="Select your income range"/>
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="below-50k">Below ₹50,000</SelectItem>
-                                <SelectItem value="50k-2l">₹50,000 - ₹2 Lakh</SelectItem>
-                                <SelectItem value="above-2l">Above ₹2 Lakh</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
 
                     {/* Credit Card Ownership */}
                     <div className="space-y-2">
@@ -208,12 +190,11 @@ const ExpenseForm = ({onComplete}: ExpenseFormProps) => {
                             onClick={() => onComplete({
                                 expenses,
                                 selectedBrands,
-                                incomeRange,
                                 hasCreditCard,
                                 creditLimit
                             })}
                             className="w-full bg-green-600 hover:bg-green-700 text-lg py-3"
-                            disabled={totalExpenses === 0 || !incomeRange || hasCreditCard === null || (hasCreditCard && !creditLimit)}
+                            disabled={totalExpenses === 0 || hasCreditCard === null || (hasCreditCard && !creditLimit)}
                         >
                             Get My Recommendations
                         </Button>

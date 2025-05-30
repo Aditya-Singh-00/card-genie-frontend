@@ -1,15 +1,18 @@
 import {useCallback, useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent} from '@/components/ui/card';
-import {Check, File, Upload, X} from 'lucide-react';
+import {Check, File, Upload, X, Lock} from 'lucide-react';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
 
 interface FileUploadProps {
-    onComplete: () => void;
+    onComplete: (password?: string) => void;
 }
 
 const FileUpload = ({onComplete}: FileUploadProps) => {
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
     const [isDragOver, setIsDragOver] = useState(false);
+    const [documentPassword, setDocumentPassword] = useState<string>('');
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();
@@ -136,8 +139,29 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
                                     : `Upload ${3 - uploadedFiles.length} more files for better recommendations (optional).`}
                             </p>
 
+                            {/* Password input for protected documents */}
+                            <div className="mb-4 max-w-md mx-auto">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Lock className="h-4 w-4 text-gray-600" />
+                                    <Label htmlFor="document-password" className="text-sm text-gray-700">
+                                        Document Password (if protected)
+                                    </Label>
+                                </div>
+                                <Input
+                                    id="document-password"
+                                    type="password"
+                                    placeholder="Enter password if your documents are protected"
+                                    value={documentPassword}
+                                    onChange={(e) => setDocumentPassword(e.target.value)}
+                                    className="border-gray-300"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    Leave blank if your documents are not password protected
+                                </p>
+                            </div>
+
                             <Button
-                                onClick={onComplete}
+                                onClick={() => onComplete(documentPassword || undefined)}
                                 className="bg-green-600 hover:bg-green-700 text-lg py-3 px-8"
                                 disabled={uploadedFiles.length === 0}
                             >

@@ -11,7 +11,6 @@ import CardBenefitsModal from '@/components/CardBenefitsModal';
 interface UserFormData {
   expenses: Record<string, number>;
   selectedBrands: Record<string, string[]>;
-  incomeRange: string;
   hasCreditCard: boolean | null;
   creditLimit: string;
 }
@@ -37,10 +36,6 @@ const Recommendations = () => {
   // Helper function to get human-readable values
   const getReadableValue = (key: string, value: string): string => {
     switch (key) {
-      case 'incomeRange':
-        return value === 'below-50k' ? 'Below ₹50,000' :
-               value === '50k-2l' ? '₹50,000 - ₹2 Lakh' :
-               value === 'above-2l' ? 'Above ₹2 Lakh' : value;
       case 'creditLimit':
         return value === 'below-1l' ? 'Below ₹1 Lakh' :
                value === '1l-2.5l' ? '₹1 Lakh - ₹2.5 Lakh' :
@@ -254,9 +249,6 @@ const Recommendations = () => {
                         <h5 className="font-semibold text-blue-800 mb-1">Your Financial Profile</h5>
                         <ul className="text-blue-700 space-y-1">
                           <li>
-                            <span className="font-medium">Income Range:</span> {getReadableValue('incomeRange', userFormData.incomeRange)}
-                          </li>
-                          <li>
                             <span className="font-medium">Credit Card Status:</span> {userFormData.hasCreditCard ? 'Currently have a credit card' : 'No credit card'}
                           </li>
                           {userFormData.hasCreditCard && userFormData.creditLimit && (
@@ -266,9 +258,7 @@ const Recommendations = () => {
                           )}
                         </ul>
                         <p className="text-blue-700 mt-2 text-sm italic">
-                          {userFormData.incomeRange === 'above-1l' ?
-                            'Your high income qualifies you for premium credit cards with exclusive benefits.' :
-                            'We\'ve selected cards that match your income profile and spending habits.'}
+                          We've selected cards that match your spending habits.
                           {userFormData.hasCreditCard && userFormData.creditLimit === 'above-8l' &&
                             ' Your high credit limit indicates excellent credit history, making you eligible for the best card offers.'}
                         </p>
