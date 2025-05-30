@@ -206,7 +206,10 @@ const Recommendations = () => {
 
     // Transform category_breakdown data into the format expected by the pie chart
     return Object.entries(apiResponseData.category_breakdown).map(([category, data]) => ({
-      name: category.charAt(0) + category.slice(1).toLowerCase(), // Capitalize first letter, lowercase rest
+      name: (() => {
+        const categoryWithSpaces = category.replace(/_/g, ' ');
+        return categoryWithSpaces.charAt(0) + categoryWithSpaces.slice(1).toLowerCase();
+      })(), // Replace underscores with spaces, capitalize first letter, lowercase rest
       value: data.amount,
       color: categoryColors[category] || '#6B7280', // Use default color if category color is not defined
       percentage: data.percentage,
@@ -226,7 +229,10 @@ const Recommendations = () => {
 
     return apiData.map((card, index) => {
       // Keep the totalReturn as a string without converting to number
-      const totalReturnValue = card.totalReturn.replace('₹', '').replace(',', '');
+      // Check if totalReturn is a string before calling replace
+      const totalReturnValue = typeof card.totalReturn === 'string'
+        ? card.totalReturn.replace('₹', '').replace(',', '')
+        : String(card.totalReturn || '0');
 
       // Get top 4 return categories
       const returnBreakupEntries = Object.entries(card.returnBreakup)
@@ -268,8 +274,8 @@ const Recommendations = () => {
         id: card.rank,
         name: card.cardName,
         image: '/placeholder.svg',
-        totalReturn: card.totalReturn, // Keep the original string format with ₹ symbol
-        currentReturn: card.currentReturn, // Keep the original string format with ₹ symbol
+        totalReturn: typeof card.totalReturn === 'string' ? card.totalReturn : String(card.totalReturn || '₹0'), // Keep the original string format with ₹ symbol
+        currentReturn: typeof card.currentReturn === 'string' ? card.currentReturn : String(card.currentReturn || '₹0'), // Keep the original string format with ₹ symbol
         returnValue: totalReturnValue, // Keep as string
         isTopRecommended: index === 0, // First card is top recommended
         keyBenefits: topBenefits && topBenefits.length > 0 ? topBenefits : ['No specific benefits listed'],
@@ -570,13 +576,13 @@ const Recommendations = () => {
                       {/* Total Return */}
                       <div className="flex items-center gap-3 mb-5">
                         <div className="text-4xl font-bold text-green-600">
-                          {card.totalReturn}
+                          {typeof card.totalReturn === 'string' ? card.totalReturn : String(card.totalReturn || '₹0')}
                         </div>
                         <div className="text-sm text-gray-600">
                           <div>Total Return</div>
                           {card.currentReturn && (
                             <div className="text-red-500">
-                              vs {card.currentReturn} (current)
+                              vs {typeof card.currentReturn === 'string' ? card.currentReturn : String(card.currentReturn || '₹0')} (current)
                             </div>
                           )}
                         </div>

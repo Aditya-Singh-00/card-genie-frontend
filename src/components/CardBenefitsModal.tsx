@@ -175,7 +175,7 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                             <p className="text-lg opacity-90">Premium Credit Card</p>
                         </div>
                         <div className="text-right">
-                            <div className="text-3xl font-bold">{card.totalReturn}</div>
+                            <div className="text-3xl font-bold">{typeof card.totalReturn === 'string' ? card.totalReturn : String(card.totalReturn || '₹0')}</div>
                             <div className="text-sm opacity-90">Total Returns</div>
                         </div>
                     </div>
@@ -227,7 +227,7 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                                             className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
                                             <h4 className="font-bold text-gray-800">Total Monthly Returns</h4>
                                             <div className="text-xl font-bold text-green-600">
-                                                {card.totalReturn}
+                                                {typeof card.totalReturn === 'string' ? card.totalReturn : String(card.totalReturn || '₹0')}
                                             </div>
                                         </div>
                                     </div>
