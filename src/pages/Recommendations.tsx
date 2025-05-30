@@ -7,6 +7,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Label } from 'rechar
 import { TrendingUp, CreditCard, Gift, Shield, Plane, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CardBenefitsModal from '@/components/CardBenefitsModal';
+import Lottie from 'lottie-react';
+import loaderAnimation from '@/loader_anim.json';
 
 interface UserFormData {
   expenses: Record<string, number>;
@@ -66,6 +68,7 @@ const Recommendations = () => {
   const [userFormData, setUserFormData] = useState<UserFormData | null>(null);
   const [apiResponseData, setApiResponseData] = useState<ApiResponseData | null>(null);
   const [cardRecommendations, setCardRecommendations] = useState<CardRecommendation[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Retrieve user form data and API response data from sessionStorage when component mounts
   useEffect(() => {
@@ -112,6 +115,9 @@ const Recommendations = () => {
     // Get customerId from sessionStorage
     const customerId = sessionStorage.getItem('customerId');
     if (customerId) {
+      // Set loading state to true before making the API call
+      setLoading(true);
+
       // Retrieve card names from sessionStorage
       let cardNames: string[] = [];
       const storedCardNames = sessionStorage.getItem('selectedCardNames');
@@ -153,9 +159,13 @@ const Recommendations = () => {
         sessionStorage.setItem('cardRecommendations', JSON.stringify(data));
         // Update the state with the new recommendations
         setCardRecommendations(data);
+        // Set loading state to false after successful API call
+        setLoading(false);
       })
       .catch(error => {
         console.error('Error getting recommendations:', error);
+        // Set loading state to false in case of error
+        setLoading(false);
       });
     } else {
       console.error('No customerId found in sessionStorage');
@@ -371,7 +381,7 @@ const Recommendations = () => {
     },
   ];
 
-  // Use API data if available, otherwise use fallback data
+  // Use API data if available, otherwise use fallback data (but only if not loading)
   const recommendedCards = cardRecommendations.length > 0
     ? mapApiDataToCardFormat(cardRecommendations)
     : fallbackCards;
@@ -383,6 +393,17 @@ const Recommendations = () => {
   const sortedExpenses = [...expenseData].sort((a, b) => b.value - a.value);
   const topCategory = sortedExpenses.length > 0 ? sortedExpenses[0] : null;
   const secondCategory = sortedExpenses.length > 1 ? sortedExpenses[1] : null;
+
+  // If loading, show loading animation
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex justify-center items-center">
+        <div className="w-64 h-64">
+          <Lottie animationData={loaderAnimation} loop={true} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
@@ -423,27 +444,28 @@ const Recommendations = () => {
                 <div className="flex justify-start">
                   <div>
                     <h3 className="text-lg font-semibold mb-2 text-gray-800">Expense Breakdown</h3>
-                    <ResponsiveContainer width={280} height={280}>
-                      <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                    <ResponsiveContainer width={350} height={350}>
+                      <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                         <Pie
                           data={expenseData}
                           cx="50%"
                           cy="50%"
                           innerRadius={70}
                           outerRadius={120}
-                          paddingAngle={5}
+                          paddingAngle={0}
                           dataKey="value"
-                          labelLine={false}
+                          labelLine={true}
                           label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                            const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                            // Calculate position outside the pie chart
+                            const radius = outerRadius * 1.2;
                             const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
                             const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
                             return (
                               <text
                                 x={x}
                                 y={y}
-                                fill="#fff"
-                                textAnchor="middle"
+                                fill="#333"
+                                textAnchor={x > cx ? 'start' : 'end'}
                                 dominantBaseline="central"
                                 fontWeight="bold"
                               >
@@ -532,6 +554,7 @@ const Recommendations = () => {
           <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
             Top 3 Credit Card Recommendations
           </h2>
+
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {recommendedCards.map((card, index) => (
