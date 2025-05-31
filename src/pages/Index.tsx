@@ -208,7 +208,7 @@ const Index = () => {
 
                                                     // Create a timeout promise to abort the fetch if it takes too long
                                                     const timeoutPromise = new Promise((_, reject) => {
-                                                        setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
+                                                        setTimeout(() => reject(new Error('Request timeout after 60 seconds')), 60000);
                                                     });
 
                                                     // Use Promise.race to implement a timeout

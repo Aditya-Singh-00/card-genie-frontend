@@ -215,28 +215,36 @@ const Recommendations = () => {
     'UTILITIES': '#14B8A6'
   };
 
+  // Array of distinct colors for pie chart sections
+  const COLORS = [
+    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+    '#FF9F40', '#8AC926', '#1982C4', '#6A4C93', '#F15BB5',
+    '#00F5D4', '#FB5607', '#FF006E', '#8338EC', '#3A86FF',
+    '#606C38', '#283618', '#DDA15E', '#BC6C25', '#0077B6'
+  ];
+
   // Transform API response data into the format expected by the pie chart
   const getExpenseDataFromApi = () => {
     if (!apiResponseData || !apiResponseData.category_breakdown) {
       // Return mock data if API data is not available
       return [
-        { name: 'Shopping', value: 15000, color: '#8B5CF6' },
-        { name: 'Food & Dining', value: 12000, color: '#06B6D4' },
-        { name: 'Travel', value: 8000, color: '#10B981' },
-        { name: 'Fuel', value: 6000, color: '#F59E0B' },
-        { name: 'Bills', value: 5000, color: '#EF4444' },
-        { name: 'Others', value: 4000, color: '#6B7280' },
+        { name: 'Shopping', value: 15000, color: COLORS[0] },
+        { name: 'Food & Dining', value: 12000, color: COLORS[1] },
+        { name: 'Travel', value: 8000, color: COLORS[2] },
+        { name: 'Fuel', value: 6000, color: COLORS[3] },
+        { name: 'Bills', value: 5000, color: COLORS[4] },
+        { name: 'Others', value: 4000, color: COLORS[5] },
       ];
     }
 
     // Transform category_breakdown data into the format expected by the pie chart
-    return Object.entries(apiResponseData.category_breakdown).map(([category, data]) => ({
+    return Object.entries(apiResponseData.category_breakdown).map(([category, data], index) => ({
       name: (() => {
         const categoryWithSpaces = category.replace(/_/g, ' ');
         return categoryWithSpaces.charAt(0) + categoryWithSpaces.slice(1).toLowerCase();
       })(), // Replace underscores with spaces, capitalize first letter, lowercase rest
       value: data.amount,
-      color: categoryColors[category] || '#6B7280', // Use default color if category color is not defined
+      color: COLORS[index % COLORS.length], // Ensure each category gets a unique color
       percentage: data.percentage,
       count: data.count
     }));
@@ -539,26 +547,6 @@ const Recommendations = () => {
                     </p>
 
                     {/* User Financial Information */}
-                    {userFormData && (
-                      <div className="mt-2 pt-2 border-t border-blue-200">
-                        <h5 className="font-semibold text-blue-800 mb-1">Your Financial Profile</h5>
-                        <ul className="text-blue-700 space-y-1">
-                          <li>
-                            <span className="font-medium">Credit Card Status:</span> {userFormData.hasCreditCard ? 'Currently have a credit card' : 'No credit card'}
-                          </li>
-                          {userFormData.hasCreditCard && userFormData.creditLimit && (
-                            <li>
-                              <span className="font-medium">Credit Limit:</span> {getReadableValue('creditLimit', userFormData.creditLimit)}
-                            </li>
-                          )}
-                        </ul>
-                        <p className="text-blue-700 mt-2 text-sm italic">
-                          We've selected cards that match your spending habits.
-                          {userFormData.hasCreditCard && userFormData.creditLimit === 'above-8l' &&
-                            ' Your high credit limit indicates excellent credit history, making you eligible for the best card offers.'}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
@@ -665,7 +653,6 @@ const Recommendations = () => {
                       className="flex-1 text-sm"
                       onClick={() => setSelectedCard(card)}
                     >
-                      <Shield className="h-3 w-3 mr-1" />
                       All Benefits
                     </Button>
 
@@ -676,7 +663,6 @@ const Recommendations = () => {
                           : 'bg-blue-600 hover:bg-blue-700'
                       }`}
                     >
-                      <Plane className="h-3 w-3 mr-1" />
                       Apply Now
                     </Button>
                   </div>
