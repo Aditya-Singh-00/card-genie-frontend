@@ -59,7 +59,7 @@ interface CardRecommendation {
   returnBreakup: ReturnBreakup;
   eligibilityCriteria: EligibilityCriteria;
   rewardSummary: RewardCategory[];
-  benefits: String[];
+  benefits: string[];
 }
 
 const Recommendations = () => {
@@ -627,9 +627,12 @@ const Recommendations = () => {
                           {typeof card.totalReturn === 'string' ? card.totalReturn : String(card.totalReturn || '₹0')}
                         </div>
 
-                        <div className="text-gray-500 text-sm">
-                          vs your current savings: <span className="text-red-500 font-semibold">{typeof card.currentReturn === 'string' ? card.currentReturn : String(card.currentReturn || '₹0')}</span>
-                        </div>
+
+                        {(typeof card.currentReturn === 'string' ? card.currentReturn !== '₹0' : String(card.currentReturn || '₹0') !== '₹0') && (
+                          <div className="text-gray-500 text-sm">
+                            vs your current savings: <span className="text-red-500 font-semibold">{typeof card.currentReturn === 'string' ? card.currentReturn : String(card.currentReturn || '₹0')}</span>
+                          </div>
+                        )}
                       </div>
 
                       {/*<div className="flex items-center gap-3 mb-5">*/}
