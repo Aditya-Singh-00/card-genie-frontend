@@ -11,6 +11,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import SpendingAnalysis from '@/components/SpendingAnalysis';
 import Lottie from 'lottie-react';
 import loaderAnimation from '../loader_anim.json';
+import gromoLogo from '../images/gromo_logo.svg';
+import bgImage from '../images/bg.png';
 
 // Define the FileWithPassword interface to match the one in FileUpload.tsx
 interface FileWithPassword {
@@ -112,23 +114,36 @@ const Index = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <div className="min-h-screen" style={{
+                        backgroundImage: `url(${bgImage})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        backgroundRepeat: 'no-repeat',
+                        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                        backgroundBlendMode: 'lighten'
+                    }}>
             {/* Header */}
             <header className="bg-white/80 backdrop-blur-md border-b border-blue-100 sticky top-0 z-50">
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                            Credit Card Genie
-                        </h1>
+                        <div className="flex items-center gap-3">
+                            <img src={gromoLogo} alt="Gromo Logo" className="h-8 w-8" />
+                            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+                                Credit Card Genie
+                            </h1>
+                        </div>
                     </div>
                 </div>
             </header>
 
             {/* Hero Section */}
-            <section className="container mx-auto px-4 py-12">
-                <div className="text-center mb-12">
+            <section className="container mx-auto px-4 py-16">
+                <div className="text-center mb-16">
                     <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-700 to-green-600 bg-clip-text text-transparent">
-                        Discover the Best Credit Card for You
+                        SaveMax
+                    </h2>
+                    <h2 className="text-4xl font-bold mb-16 bg-gradient-to-r from-blue-700 to-green-600 bg-clip-text text-transparent">
+                        Get the card that pays you max
                     </h2>
                     <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
                         Get personalized credit card recommendations based on your spending patterns
@@ -352,7 +367,7 @@ const Index = () => {
                                             className="w-full bg-green-600 hover:bg-green-700"
                                             onClick={() => setActiveAction('manual')}
                                         >
-                                            Begin Manual Entry
+                                            {"Let's Start"}
                                         </Button>
                                     </CardContent>
                                 </Card>

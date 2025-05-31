@@ -443,7 +443,7 @@ const Recommendations = () => {
   // If loading, show loading animation
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex flex-col justify-center items-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex flex-col justify-center items-center px-4 sm:px-6 md:px-8">
         <div className="w-64 h-64">
           <Lottie animationData={loaderAnimation} loop={true} />
         </div>
@@ -457,7 +457,7 @@ const Recommendations = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 px-4 sm:px-6 md:px-8">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-blue-100 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
