@@ -45,44 +45,40 @@ const Index = () => {
         'UTILITIES': '#14B8A6'
     };
 
-    // Check for customerId in sessionStorage when component mounts
+    // Clear sessionStorage and authenticate when component mounts
     useEffect(() => {
-        const checkCustomerId = async () => {
-            // Check if customerId exists in sessionStorage
-            const customerId = sessionStorage.getItem('customerId');
-            console.log("customerId", customerId);
+        const authenticate = async () => {
+            // Clear all sessionStorage items
+            sessionStorage.clear();
+            console.log("SessionStorage cleared");
 
-            if (!customerId) {
-                try {
-                    // Make API call to authenticate endpoint
-                    const response = await fetch('http://localhost:3003/credit.genie.in/authenticate', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            token: "swipe_right.cc"
-                        }),
-                    });
+            try {
+                // Always make API call to authenticate endpoint
+                const response = await fetch('http://localhost:3003/credit.genie.in/authenticate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        token: "swipe_right.cc"
+                    }),
+                });
 
-                    if (!response.ok) {
-                        throw new Error(`Authentication failed: ${response.status}`);
-                    }
-                    const data = await response.json();
-                    console.log('Authentication response:', data);
-
-                    if (data.customerId) {
-                        sessionStorage.setItem('customerId', data.customerId);
-                        console.log('CustomerId saved to sessionStorage:', data.customerId);
-                    }
-                } catch (error) {
-                    console.error('Error during authentication:', error);
+                if (!response.ok) {
+                    throw new Error(`Authentication failed: ${response.status}`);
                 }
-            } else {
-                console.log('Using existing customerId from sessionStorage:', customerId);
+                const data = await response.json();
+                console.log('Authentication response:', data);
+
+                if (data.customerId) {
+                    sessionStorage.setItem('customerId', data.customerId);
+                    console.log('CustomerId saved to sessionStorage:', data.customerId);
+                }
+            } catch (error) {
+                console.error('Error during authentication:', error);
             }
         };
-        checkCustomerId();
+        authenticate();
     }, []);
 
     const promotionStats = [
@@ -345,9 +341,7 @@ const Index = () => {
                                 </Card>
 
                                 {/* Manual Entry */}
-                                <Card className={`transition-all duration-300 hover:shadow-xl border-2 ${
-                                    activeAction === 'manual' ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-green-300'
-                                }`}>
+                                <Card className={`transition-all duration-300 hover:shadow-xl border-2 border-gray-200 hover:border-green-300`}>
                                     <CardContent className="p-8 text-center">
                                         <Calculator className="h-16 w-16 text-green-600 mx-auto mb-4"/>
                                         <h4 className="text-xl font-semibold mb-3 text-gray-800">Enter Your Expenses Manually</h4>
@@ -491,16 +485,16 @@ const Index = () => {
                                     if (categoryBreakdown) {
                                         Object.entries(categoryBreakdown).forEach(([category, data]) => {
                                             // Get brands for this category if available
-                                            const brands = selectedFiles
-                                                .filter(file => file.cardName)
-                                                .map(file => file.cardName)
-                                                .join(', ');
+                                            // const brands = selectedFiles
+                                            //     .filter(file => file.cardName)
+                                            //     .map(file => file.cardName)
+                                            //     .join(', ');
 
                                             formattedData.category_breakdown[category] = {
                                                 amount: data.amount,
                                                 percentage: data.percentage,
                                                 count: 1, // Set count to 1 as per requirement
-                                                brands: brands || category // Use category name as fallback if no brands
+                                                brands: category // Use category name as fallback if no brands
                                             };
                                         });
                                     }
