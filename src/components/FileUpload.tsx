@@ -247,7 +247,7 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
                         Upload Previous Statements
                     </h4>
                     <p className="text-gray-600 mb-4">
-                        Upload your credit card statements for accurate analysis. We recommend at least 3 months of data.
+                        Upload your credit card statements for accurate analysis.
                     </p>
 
                     <input

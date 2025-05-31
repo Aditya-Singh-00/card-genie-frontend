@@ -78,9 +78,9 @@ const Recommendations = () => {
 
   // Array of loading text messages
   const loadingTexts = [
-    "Finding the perfect credit card for your spending habits...",
-    "Calculating potential cashback and reward points for you...",
-    "Matching your spending pattern with the best card offers"
+    "Finding the best card for your spending...",
+    "Calculating your cashback and rewards...",
+    "Matching your habits with top card offers..."
   ];
 
   // Effect to cycle through loading texts
@@ -624,7 +624,7 @@ const Recommendations = () => {
                   </div>
                 )}
 
-                <CardContent className="p-6 mt-8">
+                <CardContent className={`p-6 ${card.isTopRecommended ? 'mt-2' : 'mt-8'}`}>
                   <div className="flex flex-col gap-6">
                     {/* Card Image - Made rectangular like a credit card */}
                     {/*<div*/}
@@ -634,7 +634,7 @@ const Recommendations = () => {
                     {/*</div>*/}
 
                     <div
-                        className={`h-48 w-full rounded-lg mb-3 flex items-center justify-center`}
+                        className={`h-48 w-full rounded-lg mb-3 flex items-center justify-center ${!card.isTopRecommended ? 'pt-7' : 'pt-0'}`}
                     >
                       <img
                           src={card.isTopRecommended ? card1Image : (index == 1 ? card2Image : card3Image)}
@@ -645,7 +645,7 @@ const Recommendations = () => {
 
                     {/* Card Details */}
                     <div>
-                      <h3 className="text-xl font-bold mb-3 text-gray-800">{card.name}</h3>
+                      <h3 className={`text-xl font-bold mb-3 text-gray-800 ${card.isTopRecommended ? 'mt-0' : 'mt-5'}`}>{card.name}</h3>
 
                       {/* Total Return */}
                       <div className={`bg-blue-50 rounded-2xl p-6 text-center ${card.isTopRecommended ? 'shadow-lg' : ''} border-2 border-opacity-20`} style={{ borderColor: card.isTopRecommended ? card.theme.secondary : '#e5e7eb' }}>

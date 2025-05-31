@@ -129,7 +129,7 @@ const Index = () => {
                         <div className="flex items-center gap-3">
                             <img src={gromoLogo} alt="Gromo Logo" className="h-8 w-8" />
                             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                                Credit Card Genie
+                                Saving Maximizer
                             </h1>
                         </div>
                     </div>
@@ -139,11 +139,11 @@ const Index = () => {
             {/* Hero Section */}
             <section className="container mx-auto px-4 py-16">
                 <div className="text-center mb-16">
-                    <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-700 to-green-600 bg-clip-text text-transparent">
-                        SaveMax
-                    </h2>
+                    {/*<h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-700 to-green-600 bg-clip-text text-transparent">*/}
+                    {/*    SaveMax*/}
+                    {/*</h2>*/}
                     <h2 className="text-4xl font-bold mb-16 bg-gradient-to-r from-blue-700 to-green-600 bg-clip-text text-transparent">
-                        Get the card that pays you max
+                        Get the card that rewards you max
                     </h2>
                     <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
                         Get personalized credit card recommendations based on your spending patterns
