@@ -528,7 +528,8 @@ const Index = () => {
                                     .then(data => {
                                         console.log('API response data:', data);
                                         // Store the recommendations data in sessionStorage
-                                        sessionStorage.setItem('cardRecommendations', JSON.stringify(data));
+                                        sessionStorage.setItem('cardRecommendations', JSON.stringify(data?.topRecommendations));
+                                        sessionStorage.setItem('aiInsights', data?.ai_insights);
                                         // Set loading state to false
                                         setIsLoading(false);
                                         // Navigate to recommendations page

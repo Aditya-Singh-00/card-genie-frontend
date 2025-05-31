@@ -120,7 +120,7 @@ const Recommendations = () => {
     if (storedCardRecommendations) {
       try {
         const parsedCardRecommendations = JSON.parse(storedCardRecommendations);
-        console.log("cardREcommendataion", parsedCardRecommendations);
+        console.log("cardRecommendation", parsedCardRecommendations);
         setCardRecommendations(parsedCardRecommendations);
         console.log('Retrieved card recommendations data:', parsedCardRecommendations);
       } catch (error) {
@@ -190,9 +190,10 @@ const Recommendations = () => {
       .then(data => {
         console.log('API response data:', data);
         // Store the recommendations data in sessionStorage
-        sessionStorage.setItem('cardRecommendations', JSON.stringify(data));
+        sessionStorage.setItem('cardRecommendations', JSON.stringify(data?.topRecommendations));
+        sessionStorage.setItem('aiInsights', data?.ai_insights);
         // Update the state with the new recommendations
-        setCardRecommendations(data);
+        setCardRecommendations(data?.topRecommendations);
         // Set loading state to false after successful API call
         setLoading(false);
       })
@@ -430,6 +431,7 @@ const Recommendations = () => {
     ? mapApiDataToCardFormat(cardRecommendations)
     : fallbackCards;
 
+  const aiInsights = sessionStorage.getItem('aiInsights');
   // Calculate total expense from the expense data
   const totalExpense = ""//expenseData.reduce((sum, item) => sum + item.value, 0);
 
@@ -558,18 +560,8 @@ const Recommendations = () => {
                   <div className="mt-[30px] p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <h4 className="font-semibold text-blue-800 mb-2">AI Insights</h4>
                     <p className="text-blue-700 mb-3">
-                      Based on your spending pattern of ₹{totalExpense.toLocaleString()}/month,
-                      {topCategory && secondCategory ? (
-                        <>
-                          </>
-                      ) : (
-                        <>
-                          your spending is distributed across various categories.
-                        </>
-                      )}
-                      Our recommendations focus on maximizing rewards in these categories.
+                      {aiInsights}
                     </p>
-
                     {/* User Financial Information */}
                   </div>
                 </div>
