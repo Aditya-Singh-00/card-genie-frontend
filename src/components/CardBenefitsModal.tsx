@@ -213,7 +213,7 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                                              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                             <div>
                                                 <h4 className="font-semibold text-gray-800">{item.category}</h4>
-                                                <p className="text-sm text-gray-600">{item.percentage} rewards rate</p>
+                                                <p className="text-sm text-gray-600">{item.amount} rewards rate</p>
                                             </div>
                                             <div className="text-right">
                                                 <div className="text-lg font-bold text-green-600">{item.amount}</div>

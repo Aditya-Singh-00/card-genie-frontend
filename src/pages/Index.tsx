@@ -384,168 +384,49 @@ const Index = () => {
                                         // Store the form data in sessionStorage to be accessed by the recommendations page
                                         sessionStorage.setItem('userFormData', JSON.stringify(data));
 
-                                        // Format data for API call
-                                        const spendCategory = Object.entries(data.expenses)
+                                        // Set loading state to true
+                                        setIsLoading(true);
+
+                                        // Format data for the get-recommendation API call
+                                        const category_breakdown = {};
+
+                                        // Calculate total expenses for percentage calculation
+                                        const totalExpenses = Object.values(data.expenses).reduce((sum, val) => sum + val, 0);
+
+                                        // Process each expense category
+                                        Object.entries(data.expenses)
                                             .filter(([_, amount]) => amount > 0)
-                                            .map(([category, amount]) => ({
-                                                categoryName: category.charAt(0).toUpperCase() + category.slice(1),
-                                                categoryAmount: amount,
-                                                subCategory: data.selectedBrands[category] || []
-                                            }));
+                                            .forEach(([category, amount]) => {
+                                                // Calculate percentage
+                                                const percentage = (amount / totalExpenses) * 100;
 
+                                                // Get brands for this category
+                                                const brands = data.selectedBrands[category] ?
+                                                    data.selectedBrands[category].join(', ') :
+                                                    category.charAt(0).toUpperCase() + category.slice(1);
 
-                                        // Map credit limit values to the required format
-                                        let formattedCreditLimit;
-                                        switch (data.creditLimit) {
-                                            case 'below-1l':
-                                                formattedCreditLimit = 'below 1 lakh';
-                                                break;
-                                            case '1l-2.5l':
-                                                formattedCreditLimit = '1 to 2.5 lakh';
-                                                break;
-                                            case '2.5l-5l':
-                                                formattedCreditLimit = '2.5 to 5 lakh';
-                                                break;
-                                            case '5l-8l':
-                                                formattedCreditLimit = '5 to 8 lakh';
-                                                break;
-                                            case 'above-8l':
-                                                formattedCreditLimit = 'above 8 lakh';
-                                                break;
-                                            default:
-                                                formattedCreditLimit = data.creditLimit;
-                                        }
+                                                // Format category name to uppercase
+                                                const categoryKey = category.toUpperCase();
 
-                                        // Get customerId from sessionStorage
-                                        const customerId = sessionStorage.getItem('customerId');
-
-                                        // Prepare the payload for the API
-                                        const payload = {
-                                            spendCategory,
-                                            hasCreditCard: data.hasCreditCard,
-                                            creditLimit: formattedCreditLimit,
-                                            customerId: customerId || '', // Include customerId in the payload
-                                        };
-
-                                        // Make the API call
-                                        console.log('Making API call with payload:', payload);
-
-                                        // Create a timeout promise to abort the fetch if it takes too long
-                                        const timeoutPromise = new Promise((_, reject) => {
-                                            setTimeout(() => reject(new Error('Request timeout after 10 seconds')), 10000);
-                                        });
-
-                                        // Updated API endpoint as per requirements
-                                        const apiUrl = 'http://localhost:3003/credit.genie.in/recommendation';
-                                        console.log('API URL:', apiUrl);
-
-                                        // Use Promise.race to implement a timeout
-                                        Promise.race([
-                                            fetch(apiUrl, {
-                                                method: 'POST',
-                                                headers: {
-                                                    'Content-Type': 'application/json',
-                                                    'Accept': 'application/json',
-                                                    // Add additional CORS headers
-                                                    'Access-Control-Allow-Origin': '*',
-                                                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                                                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-                                                },
-                                                // Add credentials to include cookies in the request
-                                                credentials: 'include',
-                                                body: JSON.stringify(payload),
-                                            }),
-                                            timeoutPromise
-                                        ])
-                                            .then((response: any) => {
-                                                console.log('API response status:', response.status);
-                                                if (!response.ok) {
-                                                    throw new Error(`Network response was not ok: ${response.status}`);
-                                                }
-                                                return response.json();
-                                            })
-                                            .then(data => {
-                                                console.log('API response data:', data);
-                                                // Store the API response data in sessionStorage
-                                                sessionStorage.setItem('apiResponseData', JSON.stringify(data));
-
-                                                // Store the card recommendations data if available
-                                                if (data.recommendations) {
-                                                    sessionStorage.setItem('cardRecommendations', JSON.stringify(data.recommendations));
-                                                }
-
-                                                // Navigate to recommendations page after API response
-                                                navigate('/recommendations');
-                                            })
-                                            .catch(error => {
-                                                console.error('Error submitting questionnaire:', error);
-
-                                                // Log more detailed error information
-                                                if (error.message.includes('timeout')) {
-                                                    console.error('Timeout error: The API server took too long to respond.');
-                                                    console.error('Please check if the API server is running and responsive.');
-                                                } else if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-                                                    console.error('Network error: The API server might be down or unreachable.');
-                                                    console.error('Please check if the API server is running at the correct host and port.');
-                                                } else if (error.message.includes('Network response was not ok')) {
-                                                    console.error('Server error: The API server returned an error response.');
-                                                    console.error('Please check the server logs for more information.');
-                                                }
-                                                // Use the original URL format with the updated endpoint
-                                                const originalApiUrl = 'http://localhost:3003/credit.genie.in/recommendation';
-                                                console.log('Fallback API URL:', originalApiUrl);
-
-                                                // Make a new API call with the original URL
-                                                fetch(originalApiUrl, {
-                                                    method: 'POST',
-                                                    headers: {
-                                                        'Content-Type': 'application/json',
-                                                        'Accept': 'application/json'
-                                                    },
-                                                    body: JSON.stringify(payload), // payload already includes customerId and documentPassword
-                                                })
-                                                    .then(response => {
-                                                        console.log('Fallback API response status:', response.status);
-                                                        if (!response.ok) {
-                                                            throw new Error(`Fallback network response was not ok: ${response.status}`);
-                                                        }
-                                                        return response.json();
-                                                    })
-                                                    .then(data => {
-                                                        console.log('Fallback API response data:', data);
-                                                        // Store the API response data in sessionStorage
-                                                        sessionStorage.setItem('apiResponseData', JSON.stringify(data));
-
-                                                        // Store the card recommendations data if available
-                                                        if (data.recommendations) {
-                                                            sessionStorage.setItem('cardRecommendations', JSON.stringify(data.recommendations));
-                                                        }
-
-                                                        // Navigate to recommendations page after API response
-                                                        navigate('/recommendations');
-                                                    })
-                                                    .catch(fallbackError => {
-                                                        console.error('Error with fallback API call:', fallbackError);
-
-                                                        // Create default data if no data is available
-                                                        if (!sessionStorage.getItem('apiResponseData')) {
-                                                            const defaultApiData = {
-                                                                category_breakdown: {
-                                                                    "SHOPPING": { amount: 15000, percentage: 30, count: 10 },
-                                                                    "DINING": { amount: 12000, percentage: 24, count: 8 },
-                                                                    "TRAVEL": { amount: 8000, percentage: 16, count: 5 },
-                                                                    "FUEL": { amount: 6000, percentage: 12, count: 4 },
-                                                                    "BILLS": { amount: 5000, percentage: 10, count: 3 },
-                                                                    "OTHERS": { amount: 4000, percentage: 8, count: 2 }
-                                                                }
-                                                            };
-                                                            sessionStorage.setItem('apiResponseData', JSON.stringify(defaultApiData));
-                                                        }
-
-                                                        // Navigate to recommendations page after API response
-                                                        navigate('/recommendations');
-                                                    });
+                                                // Add to category_breakdown
+                                                category_breakdown[categoryKey] = {
+                                                    amount: amount,
+                                                    percentage: parseFloat(percentage.toFixed(2)),
+                                                    count: 1, // Set count to 1 as per requirement
+                                                    brands: brands
+                                                };
                                             });
+
+                                        // Store the categoryBreakdown data in sessionStorage
+                                        sessionStorage.setItem('categoryBreakdown', JSON.stringify(category_breakdown));
+                                            const defaultApiData = {
+                                                category_breakdown: category_breakdown
+                                            };
+                                            sessionStorage.setItem('apiResponseData', JSON.stringify(defaultApiData));
+
+
+                                        // Navigate to recommendations page after API response
+                                        navigate('/recommendations');
                                     } else {
                                         // Create default data if no data is available
                                         if (!sessionStorage.getItem('apiResponseData')) {
@@ -602,63 +483,66 @@ const Index = () => {
 
                                     // Get customerId from sessionStorage
                                     const customerId = sessionStorage.getItem('customerId');
-                                    if (customerId) {
-                                        // Extract card names from selectedFiles
-                                        const cardNames = selectedFiles
-                                            .filter(file => file.cardName) // Filter out files without card names
-                                            .map(file => file.cardName);   // Extract card names
 
-                                        // Store card names in sessionStorage for use in Recommendations.tsx
-                                        if (cardNames.length > 0) {
-                                            sessionStorage.setItem('selectedCardNames', JSON.stringify(cardNames));
-                                        }
+                                    // Format the data according to the required structure
+                                    const formattedData = {
+                                        category_breakdown: {}
+                                    };
 
-                                        // Create request body
-                                        const requestBody = {
-                                            customerId: customerId,
-                                            cardName: cardNames.length > 0 ? cardNames : undefined
-                                        };
+                                    // Convert the categoryBreakdown to the required format
+                                    if (categoryBreakdown) {
+                                        Object.entries(categoryBreakdown).forEach(([category, data]) => {
+                                            // Get brands for this category if available
+                                            const brands = selectedFiles
+                                                .filter(file => file.cardName)
+                                                .map(file => file.cardName)
+                                                .join(', ');
 
-                                        console.log('Request body for get-recommendations:', requestBody);
-
-                                        // Make the API call
-                                        fetch(apiUrl, {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'Accept': 'application/json',
-                                            },
-                                            body: JSON.stringify(requestBody),
-                                        })
-                                        .then(response => {
-                                            if (!response.ok) {
-                                                throw new Error(`Network response was not ok: ${response.status}`);
-                                            }
-                                            return response.json();
-                                        })
-                                        .then(data => {
-                                            console.log('API response data:', data);
-                                            // Store the recommendations data in sessionStorage
-                                            sessionStorage.setItem('cardRecommendations', JSON.stringify(data));
-                                            // Set loading state to false
-                                            setIsLoading(false);
-                                            // Navigate to recommendations page
-                                            navigate('/recommendations');
-                                        })
-                                        .catch(error => {
-                                            console.error('Error getting recommendations:', error);
-                                            // Set loading state to false
-                                            setIsLoading(false);
-                                            // Navigate to recommendations page anyway for demo purposes
-                                            navigate('/recommendations');
+                                            formattedData.category_breakdown[category] = {
+                                                amount: data.amount,
+                                                percentage: data.percentage,
+                                                count: 1, // Set count to 1 as per requirement
+                                                brands: brands || category // Use category name as fallback if no brands
+                                            };
                                         });
-                                    } else {
-                                        console.error('No customerId found in sessionStorage');
+                                    }
+
+                                    console.log('Request body for get-recommendation:', formattedData);
+
+                                    // Store the categoryBreakdown data in sessionStorage
+                                    sessionStorage.setItem('categoryBreakdown', JSON.stringify(formattedData.category_breakdown));
+
+                                    // Make the API call
+                                    fetch(apiUrl, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'Accept': 'application/json',
+                                        },
+                                        body: JSON.stringify(formattedData),
+                                    })
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error(`Network response was not ok: ${response.status}`);
+                                        }
+                                        return response.json();
+                                    })
+                                    .then(data => {
+                                        console.log('API response data:', data);
+                                        // Store the recommendations data in sessionStorage
+                                        sessionStorage.setItem('cardRecommendations', JSON.stringify(data));
+                                        // Set loading state to false
+                                        setIsLoading(false);
+                                        // Navigate to recommendations page
+                                        navigate('/recommendations');
+                                    })
+                                    .catch(error => {
+                                        console.error('Error getting recommendations:', error);
                                         // Set loading state to false
                                         setIsLoading(false);
                                         // Navigate to recommendations page anyway for demo purposes
                                         navigate('/recommendations');
-                                    }
+                                    });
                                 }}
                             >
                                 Get Recommendations

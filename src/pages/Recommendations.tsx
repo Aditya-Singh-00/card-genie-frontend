@@ -69,6 +69,7 @@ const Recommendations = () => {
   const [apiResponseData, setApiResponseData] = useState<ApiResponseData | null>(null);
   const [cardRecommendations, setCardRecommendations] = useState<CardRecommendation[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [categoryBreakdown, setCategoryBreakdown] = useState<Record<string, CategoryData> | null>(null);
 
   // Retrieve user form data and API response data from sessionStorage when component mounts
   useEffect(() => {
@@ -108,12 +109,25 @@ const Recommendations = () => {
       }
     }
 
+    // Get categoryBreakdown data
+    const storedCategoryBreakdown = sessionStorage.getItem('categoryBreakdown');
+    if (storedCategoryBreakdown) {
+      try {
+        const parsedCategoryBreakdown = JSON.parse(storedCategoryBreakdown);
+        setCategoryBreakdown(parsedCategoryBreakdown);
+        console.log('Retrieved categoryBreakdown data from sessionStorage:', parsedCategoryBreakdown);
+      } catch (error) {
+        console.error('Error parsing categoryBreakdown data:', error);
+      }
+    }
+
     // Call the get-recommendation API when the component mounts
     const apiUrl = 'http://localhost:3003/credit.genie.in/get-recommendations';
     console.log('Making API call to:', apiUrl);
 
     // Get customerId from sessionStorage
     const customerId = sessionStorage.getItem('customerId');
+    const categoryBreakdown1 = JSON.parse(sessionStorage.getItem('categoryBreakdown'));
     if (customerId) {
       // Set loading state to true before making the API call
       setLoading(true);
@@ -133,7 +147,8 @@ const Recommendations = () => {
       // Create request body
       const requestBody = {
         customerId: customerId,
-        cardName: cardNames.length > 0 ? cardNames : undefined
+        cardName: cardNames.length > 0 ? cardNames : undefined,
+        categoryBreakdown: categoryBreakdown || categoryBreakdown1 || undefined
       };
 
       console.log('Request body for get-recommendations in Recommendations.tsx:', requestBody);
@@ -253,7 +268,9 @@ const Recommendations = () => {
         }))
         // Sort by numeric value for display purposes only
         .sort((a, b) => parseFloat(b.value) - parseFloat(a.value))
-        .slice(0, 4);
+
+
+      console.log("returnBreakupEntries", returnBreakupEntries)
 
       // Get top 4 benefits
       const topBenefits = card.benefits ? card.benefits.slice(0, 4).map(benefit => benefit.title) : [];
@@ -619,7 +636,7 @@ const Recommendations = () => {
                             <div key={idx} className="flex items-center gap-2 text-sm">
                               <div className="w-1 h-1 bg-green-500 rounded-full" />
                               <span className="text-gray-700">{item.category}: </span>
-                              <span className="font-medium">{item.percentage}%</span>
+                              <span className="font-medium">{item.amount}</span>
                             </div>
                           ))}
                         </div>
