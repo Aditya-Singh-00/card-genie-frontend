@@ -591,10 +591,12 @@ const Recommendations = () => {
                 }}
               >
                 {card.isTopRecommended ? (
-                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-400 to-orange-400 text-center py-1.5">
-                    <Badge className="bg-yellow-600 text-white font-bold text-sm">
+                  <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-400 to-orange-400 text-center py-1.5 relative overflow-hidden">
+                    <Badge className="bg-yellow-600 text-white font-bold text-sm relative z-10">
                       🏆 BEST CHOICE
                     </Badge>
+                    {/* Shimmer effect overlay */}
+                    <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-shimmer"></div>
                   </div>
                 ) : (
                   <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-400 to-orange-400 text-center py-1.5 opacity-0">
