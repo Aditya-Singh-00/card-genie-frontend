@@ -2,7 +2,7 @@ import {Button} from '@/components/ui/button';
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from '@/components/ui/dialog';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {CreditCard, Gift, Plane, Shield, Star} from 'lucide-react';
+import {CreditCard, Gift, Plane, Shield, Star, DollarSign, IndianRupee} from 'lucide-react';
 
 interface RewardStructure {
   valueForCalculation: string;
@@ -28,6 +28,16 @@ interface EligibilityCriteria {
   others: string;
 }
 
+interface FeeStructure {
+  joiningFee: string;
+  annualFee: string;
+  renewalFee: string;
+  renewalFeeWaiver: string;
+  forexMarkup: string;
+  fuelSurchargeWaiver: string;
+  others: string;
+}
+
 interface CardRecommendation {
   rank: number;
   cardName: string;
@@ -37,6 +47,7 @@ interface CardRecommendation {
   eligibilityCriteria: EligibilityCriteria;
   rewardSummary: RewardCategory[];
   benefits: Benefit[];
+  feeStructure: FeeStructure;
 }
 
 interface CardBenefitsModalProps {
@@ -65,6 +76,16 @@ interface CardBenefitsModalProps {
 }
 
 const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
+    // Helper function to add Rupee symbol if not already present
+    const addRupeeSymbol = (value: string | undefined): string => {
+        if (!value) return 'Not specified';
+        // If value already has Rupee symbol, return as is
+        if (value.includes('₹')) return value;
+        // If value starts with "Rs", replace it with Rupee symbol
+        if (value.startsWith('Rs')) return value.replace('Rs', '₹');
+        // Otherwise, add Rupee symbol at the beginning
+        return `₹${value}`;
+    };
     // Use API data if available, otherwise use fallback data
     const benefitsData = card.originalData ? {
         eligibility: [
@@ -72,6 +93,14 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
             {feature: 'Income/TRV', detail: card.originalData.eligibilityCriteria?.income_trv || 'Not specified'},
             {feature: 'Other Criteria', detail: card.originalData.eligibilityCriteria?.others || 'Not specified'},
         ],
+        fees: card.originalData.feeStructure ? [
+            {feature: 'Joining Fee', detail: addRupeeSymbol(card.originalData.feeStructure.joiningFee) || 'Not specified'},
+            {feature: 'Renewal Fee', detail: addRupeeSymbol(card.originalData.feeStructure.renewalFee) || 'Not specified'},
+            {feature: 'Renewal Fee Waiver', detail: addRupeeSymbol(card.originalData.feeStructure.renewalFeeWaiver) || 'Not specified'},
+            {feature: 'Forex Markup', detail: card.originalData.feeStructure.forexMarkup || 'Not specified'},
+            {feature: 'Fuel Surcharge Waiver', detail: addRupeeSymbol(card.originalData.feeStructure.fuelSurchargeWaiver) || 'Not specified'},
+            {feature: 'Other Fees', detail: addRupeeSymbol(card.originalData.feeStructure.others) || 'Not specified'},
+        ] : [],
         rewards: card.originalData.rewardSummary
             ? card.originalData.rewardSummary
                 .filter(reward => reward.rewardCategory !== 'Domestic Lounge' &&
@@ -132,9 +161,12 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
             {feature: 'Credit Score', detail: '750+'},
         ],
         fees: [
-            {feature: 'Annual Fee', detail: '₹10,000'},
-            {feature: 'Renewal Fee', detail: 'Waived on ₹8L+ spends'},
-            {feature: 'Foreign Transaction', detail: '3.5%'},
+            {feature: 'Joining Fee', detail: '₹500 + GST'},
+            {feature: 'Renewal Fee', detail: '₹10,000 + GST'},
+            {feature: 'Renewal Fee Waiver', detail: 'Waived on ₹8L+ spends'},
+            {feature: 'Forex Markup', detail: '3.5% + GST'},
+            {feature: 'Fuel Surcharge Waiver', detail: '1% up to ₹500/month'},
+            {feature: 'Other Fees', detail: 'Cash Advance: 2.5% or ₹500, whichever is higher'},
         ],
         rewards: [
             {feature: 'Dining', detail: '10X rewards'},
@@ -182,7 +214,7 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                 </div>
 
                 <Tabs defaultValue="returns" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4">
+                    <TabsList className="grid w-full grid-cols-5">
                         <TabsTrigger value="returns" className="flex items-center gap-2">
                             <Gift className="h-4 w-4"/>
                             Returns
@@ -190,6 +222,10 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                         <TabsTrigger value="eligibility" className="flex items-center gap-2">
                             <Shield className="h-4 w-4"/>
                             Eligibility
+                        </TabsTrigger>
+                        <TabsTrigger value="fees" className="flex items-center gap-2">
+                            <IndianRupee className="h-4 w-4"/>
+                            Fees
                         </TabsTrigger>
                         <TabsTrigger value="rewards" className="flex items-center gap-2">
                             <Star className="h-4 w-4"/>
@@ -247,6 +283,24 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                                         <div key={index} className="p-4 border border-gray-200 rounded-lg">
                                             <h4 className="font-semibold text-gray-800 mb-1">{benefit.feature}</h4>
                                             <p className="text-gray-600">{benefit.detail}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    <TabsContent value="fees" className="mt-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Fee Structure</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {benefitsData.fees.map((fee, index) => (
+                                        <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                                            <h4 className="font-semibold text-gray-800 mb-1">{fee.feature}</h4>
+                                            <p className="text-gray-600">{fee.detail}</p>
                                         </div>
                                     ))}
                                 </div>

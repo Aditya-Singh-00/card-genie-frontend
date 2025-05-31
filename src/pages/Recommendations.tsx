@@ -59,7 +59,7 @@ interface CardRecommendation {
   returnBreakup: ReturnBreakup;
   eligibilityCriteria: EligibilityCriteria;
   rewardSummary: RewardCategory[];
-  benefits: Benefit[];
+  benefits: String[];
 }
 
 const Recommendations = () => {
@@ -301,7 +301,7 @@ const Recommendations = () => {
       console.log("returnBreakupEntries", returnBreakupEntries)
 
       // Get top 4 benefits
-      const topBenefits = card.benefits ? card.benefits.slice(0, 4).map(benefit => benefit.title) : [];
+      const topBenefits = card.benefits ? card.benefits.slice(0, 4) : [];
 
       // Determine card theme based on rank
       let theme;
