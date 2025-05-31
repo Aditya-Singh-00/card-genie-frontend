@@ -1,73 +1,91 @@
-# Welcome to your Lovable project
+# Card Genie - Credit Card Recommendation Platform
 
-## Project info
+Card Genie is a smart credit card recommendation platform that analyzes your spending patterns and suggests the best credit cards to maximize your rewards and savings.
 
-**URL**: https://lovable.dev/projects/5908868e-9d00-47f6-8c58-8099206052f9
+![Card Genie](new_credit_card.png)
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **Statement Analysis**: Upload your credit card statements or manually enter spending data
+- **Personalized Recommendations**: Get tailored credit card recommendations based on your spending habits
+- **Spending Breakdown**: Visualize your spending across different categories
+- **Savings Calculator**: See how much you could save with recommended cards
+- **Secure & Private**: Your data is encrypted and never shared with third parties
 
-**Use Lovable**
+## Technologies Used
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5908868e-9d00-47f6-8c58-8099206052f9) and start prompting.
+- **Frontend**:
+  - React 18
+  - TypeScript
+  - Vite
+  - React Router for navigation
+  - React Query for data fetching
+  - Tailwind CSS for styling
+  - Recharts for data visualization
+  - Radix UI components
+  - React Hook Form for form handling
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Development Tools**:
+  - ESLint for code linting
+  - TypeScript for type checking
+  - Vite for fast development and building
 
-**Use your preferred IDE**
+## Getting Started
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node.js (v16 or higher)
+- npm or Bun package manager
 
-Follow these steps:
+### Installation
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/card-genie-frontend.git
+   cd card-genie-frontend
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Install dependencies:
+   ```bash
+   npm install
+   # or if using Bun
+   bun install
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. Start the development server:
+   ```bash
+   npm run dev
+   # or if using Bun
+   bun run dev
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+4. Open your browser and navigate to `http://localhost:5173`
+
+### Building for Production
+
+```bash
+npm run build
+# or if using Bun
+bun run build
 ```
 
-**Edit a file directly in GitHub**
+## Usage
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+1. **Upload Statement**: Upload your credit card statement PDF or CSV file
+2. **Or Enter Manually**: Alternatively, enter your spending data manually by category
+3. **View Analysis**: See a breakdown of your spending patterns
+4. **Get Recommendations**: Receive personalized credit card recommendations
+5. **Compare Benefits**: Compare different cards and their benefits
+6. **Calculate Savings**: See how much you could save with each recommended card
 
-**Use GitHub Codespaces**
+## API Integration
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+The application connects to a backend API for processing data and generating recommendations. Make sure the API is running at the correct endpoint (default: `http://localhost:3003`).
 
-## What technologies are used for this project?
+## Contributing
 
-This project is built with:
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## License
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/5908868e-9d00-47f6-8c58-8099206052f9) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This project is licensed under the MIT License - see the LICENSE file for details.
