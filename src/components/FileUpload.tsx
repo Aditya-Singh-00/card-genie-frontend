@@ -29,6 +29,10 @@ interface FileWithPassword {
 
 // List of credit card names
 const creditCardOptions = [
+    "Axis Bank Vistara Infinite Credit Card",
+    "Axis Bank Vistara Signature Credit Card",
+    "Axis Bank Vistara Credit Card",
+    "HDFC Diners Club International Credit Card",
     "HDFC Bank Superia Credit Card",
     "AU Bank Xcite Ultra Credit Card",
     "Emirates Skywards ICICI Bank Sapphiro Credit Card",
@@ -369,11 +373,11 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
                         </div>
 
                         <div className="text-center">
-                            <p className="text-xs text-green-700 mb-2">
-                                {uploadedFiles.length >= 3
-                                    ? "Enough files for analysis."
-                                    : `Upload ${3 - uploadedFiles.length} more files for better results (optional).`}
-                            </p>
+                            {/*<p className="text-xs text-green-700 mb-2">*/}
+                            {/*    {uploadedFiles.length >= 3*/}
+                            {/*        ? "Enough files for analysis."*/}
+                            {/*        : `Upload ${3 - uploadedFiles.length} more files for better results (optional).`}*/}
+                            {/*</p>*/}
 
                             <div className="flex justify-center mb-2">
                                 <div>

@@ -9,6 +9,10 @@ import { useNavigate } from 'react-router-dom';
 import CardBenefitsModal from '@/components/CardBenefitsModal';
 import Lottie from 'lottie-react';
 import loaderAnimation from '@/loader_anim.json';
+import card1Image from '@/images/card_1.png';
+import card2Image from '@/images/card_2.png';
+import card3Image from '@/images/card_3.png';
+import bgImage from '@/images/bg.png';
 
 interface UserFormData {
   expenses: Record<string, number>;
@@ -443,7 +447,14 @@ const Recommendations = () => {
   // If loading, show loading animation
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex flex-col justify-center items-center px-4 sm:px-6 md:px-8">
+      <div className="min-h-screen flex flex-col justify-center items-center px-4 sm:px-6 md:px-8" style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        backgroundBlendMode: 'lighten'
+      }}>
         <div className="w-64 h-64">
           <Lottie animationData={loaderAnimation} loop={true} />
         </div>
@@ -457,7 +468,14 @@ const Recommendations = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 px-4 sm:px-6 md:px-8">
+    <div className="min-h-screen px-4 sm:px-6 md:px-8" style={{
+      backgroundImage: `url(${bgImage})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      backgroundColor: 'rgba(255, 255, 255, 0.7)',
+      backgroundBlendMode: 'lighten'
+    }}>
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-blue-100 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
@@ -609,10 +627,20 @@ const Recommendations = () => {
                 <CardContent className="p-6 mt-8">
                   <div className="flex flex-col gap-6">
                     {/* Card Image - Made rectangular like a credit card */}
+                    {/*<div*/}
+                    {/*  className={`h-48 w-full rounded-lg mb-3 flex items-center justify-center bg-gradient-to-br ${card.theme.gradient}`}*/}
+                    {/*>*/}
+                    {/*  <CreditCard className="h-12 w-12 text-white" />*/}
+                    {/*</div>*/}
+
                     <div
-                      className={`h-48 w-full rounded-lg mb-3 flex items-center justify-center bg-gradient-to-br ${card.theme.gradient}`}
+                        className={`h-48 w-full rounded-lg mb-3 flex items-center justify-center`}
                     >
-                      <CreditCard className="h-12 w-12 text-white" />
+                      <img
+                          src={card.isTopRecommended ? card1Image : (index == 1 ? card2Image : card3Image)}
+                          alt="Credit Card"
+                          className="h-auto max-h-48 w-auto rounded-lg transform scale-x-110"
+                      />
                     </div>
 
                     {/* Card Details */}
