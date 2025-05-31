@@ -48,6 +48,7 @@ interface CardRecommendation {
   rewardSummary: RewardCategory[];
   benefits: Benefit[];
   feeStructure: FeeStructure;
+  applyUrl: string;
 }
 
 interface CardBenefitsModalProps {
@@ -349,6 +350,11 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                 <div className="flex gap-4 mt-6">
                     <Button
                         className={`w-full bg-gradient-to-r ${card.theme.gradient} text-white hover:opacity-90`}
+                        onClick={() => {
+                            if (card.originalData?.applyUrl) {
+                                window.open(card.originalData.applyUrl, '_blank');
+                            }
+                        }}
                     >
                         Apply for {card.name}
                     </Button>

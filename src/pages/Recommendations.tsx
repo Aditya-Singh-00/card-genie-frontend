@@ -608,7 +608,7 @@ const Recommendations = () => {
                   <div className="flex flex-col gap-6">
                     {/* Card Image - Made rectangular like a credit card */}
                     <div
-                      className={`h-48 w-full rounded-lg mb-6 flex items-center justify-center bg-gradient-to-br ${card.theme.gradient}`}
+                      className={`h-48 w-full rounded-lg mb-3 flex items-center justify-center bg-gradient-to-br ${card.theme.gradient}`}
                     >
                       <CreditCard className="h-12 w-12 text-white" />
                     </div>
@@ -618,28 +618,42 @@ const Recommendations = () => {
                       <h3 className="text-xl font-bold mb-3 text-gray-800">{card.name}</h3>
 
                       {/* Total Return */}
-                      <div className="flex items-center gap-3 mb-5">
-                        <div className="text-4xl font-bold text-green-600">
+                      <div className={`bg-blue-50 rounded-2xl p-6 text-center ${card.isTopRecommended ? 'shadow-lg' : ''} border-2 border-opacity-20`} style={{ borderColor: card.isTopRecommended ? card.theme.secondary : '#e5e7eb' }}>
+                        <div className="text-gray-600 text-sm font-medium uppercase tracking-wide mb-2">
+                          Extra Monthly Savings
+                        </div>
+
+                        <div className="text-green-600 text-4xl font-bold mb-3">
                           {typeof card.totalReturn === 'string' ? card.totalReturn : String(card.totalReturn || '₹0')}
                         </div>
-                        <div className="text-sm text-gray-600">
-                          <div>Total Return</div>
-                          {card.currentReturn && (
-                            <div className="text-red-500">
-                              vs {typeof card.currentReturn === 'string' ? card.currentReturn : String(card.currentReturn || '₹0')} (current)
-                            </div>
-                          )}
+
+                        <div className="text-gray-500 text-sm">
+                          vs your current savings: <span className="text-red-500 font-semibold">{typeof card.currentReturn === 'string' ? card.currentReturn : String(card.currentReturn || '₹0')}</span>
                         </div>
                       </div>
 
+                      {/*<div className="flex items-center gap-3 mb-5">*/}
+                      {/*  <div className="text-4xl font-bold text-green-600">*/}
+                      {/*    {typeof card.totalReturn === 'string' ? card.totalReturn : String(card.totalReturn || '₹0')}*/}
+                      {/*  </div>*/}
+                      {/*  <div className="text-sm text-gray-600">*/}
+                      {/*    <div>Total Return</div>*/}
+                      {/*    {card.currentReturn && (*/}
+                      {/*      <div className="text-red-500">*/}
+                      {/*        vs {typeof card.currentReturn === 'string' ? card.currentReturn : String(card.currentReturn || '₹0')} (current)*/}
+                      {/*      </div>*/}
+                      {/*    )}*/}
+                      {/*  </div>*/}
+                      {/*</div>*/}
+
                       {/* Return Breakup */}
-                      <div className="mb-5">
+                      <div className="mt-8 mb-5">
                         <h4 className="text-sm font-semibold text-gray-700 mb-2">RETURN BREAKUP</h4>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 gap-y-2">
                           {card.returnBreakup.slice(0, 4).map((item, idx) => (
-                            <div key={idx} className="flex items-center gap-2 text-sm">
-                              <div className="w-1 h-1 bg-green-500 rounded-full" />
-                              <span className="text-gray-700">{item.category}: </span>
+                            <div key={idx} className="flex items-center gap-2 text-sm bg-gray-100 p-2 rounded-md">
+                              <div className="w-1 h-1 bg-gray-700 rounded-full" />
+                              <span className="text-gray-600">{item.category}: </span>
                               <span className="font-medium">{item.amount}</span>
                             </div>
                           ))}
@@ -651,10 +665,10 @@ const Recommendations = () => {
                   {/* Key Benefits */}
                   <div className="mt-5 mb-6">
                     <h4 className="text-sm font-semibold text-gray-700 mb-2">KEY BENEFITS</h4>
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                    <div className="grid grid-cols-1 gap-y-2">
                       {card.keyBenefits.map((benefit, idx) => (
-                        <div key={idx} className="text-sm text-gray-700 flex items-start gap-2">
-                          <div className="w-1 h-1 bg-blue-500 rounded-full mt-1.5" />
+                        <div key={idx} className="text-sm text-gray-700 flex items-start gap-2 bg-gray-100 p-2 rounded-md">
+                          <div className="w-1 h-1 bg-gray-600 rounded-full mt-1.5" />
                           <span>{benefit}</span>
                         </div>
                       ))}
@@ -665,11 +679,10 @@ const Recommendations = () => {
                   <div className="flex gap-3 mt-6">
                     <Button
                       variant="outline"
-                      size="sm"
                       className="flex-1 text-sm"
                       onClick={() => setSelectedCard(card)}
                     >
-                      All Benefits
+                      View Details
                     </Button>
 
                     <Button
@@ -678,6 +691,11 @@ const Recommendations = () => {
                           ? 'bg-gradient-to-r from-yellow-600 to-orange-500 hover:from-yellow-700 hover:to-orange-600' 
                           : 'bg-blue-600 hover:bg-blue-700'
                       }`}
+                      onClick={() => {
+                        if (card.originalData?.applyUrl) {
+                          window.open(card.originalData.applyUrl, '_blank');
+                        }
+                      }}
                     >
                       Apply Now
                     </Button>

@@ -1,7 +1,7 @@
 import {useState} from 'react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent} from '@/components/ui/card';
-import {Check, File, Upload, X, Plus, Loader2} from 'lucide-react';
+import {Check, File, Upload, X, Plus, Loader2, Search} from 'lucide-react';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {
@@ -11,6 +11,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 // Define a type for file
 interface FileWithPassword {
@@ -180,6 +189,7 @@ interface FileUploadProps {
 const FileUpload = ({onComplete}: FileUploadProps) => {
     const [uploadedFiles, setUploadedFiles] = useState<FileWithPassword[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [openDropdown, setOpenDropdown] = useState<number | null>(null);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -208,17 +218,20 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
         });
     };
 
+    // Clear card selection for a specific file
+    const clearCardSelection = (index: number, e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent dropdown from opening
+        setUploadedFiles(prev => {
+            const newFiles = [...prev];
+            newFiles[index] = { ...newFiles[index], cardName: undefined };
+            return newFiles;
+        });
+    };
+
     const removeFile = (index: number) => {
         setUploadedFiles(prev => prev.filter((_, i) => i !== index));
     };
 
-    const formatFileSize = (bytes: number) => {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    };
 
     return (
         <div className="space-y-4">
@@ -278,7 +291,6 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
                                             <File className="h-5 w-5 text-red-500"/>
                                             <div className="truncate max-w-[200px]">
                                                 <p className="font-medium text-sm text-gray-800 truncate">{fileWithPassword.file.name}</p>
-                                                <p className="text-xs text-gray-600">{formatFileSize(fileWithPassword.file.size)}</p>
                                             </div>
                                         </div>
                                         <Button
@@ -291,26 +303,66 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
                                         </Button>
                                     </div>
 
-                                    {/* Card Selection Dropdown */}
+                                    {/* Card Selection Dropdown with Search */}
                                     <div className="mt-2">
                                         <Label htmlFor={`card-select-${index}`} className="text-xs text-gray-600 mb-1">
                                             Choose your credit card
                                         </Label>
-                                        <Select
-                                            value={fileWithPassword.cardName}
-                                            onValueChange={(value) => handleCardSelection(index, value)}
-                                        >
-                                            <SelectTrigger id={`card-select-${index}`} className="w-full text-xs h-8">
-                                                <SelectValue placeholder="Select a credit card" />
-                                            </SelectTrigger>
-                                            <SelectContent className="max-h-[200px] overflow-y-auto">
-                                                {creditCardOptions.map((card, cardIndex) => (
-                                                    <SelectItem key={cardIndex} value={card} className="text-xs">
-                                                        {card}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <Popover open={openDropdown === index} onOpenChange={(open) => {
+                                            setOpenDropdown(open ? index : null);
+                                        }}>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    role="combobox"
+                                                    aria-expanded={openDropdown === index}
+                                                    className="w-full justify-between text-xs h-8"
+                                                >
+                                                    <div className="flex items-center justify-between w-full">
+                                                        <span className="truncate">{fileWithPassword.cardName || "Select a credit card"}</span>
+                                                        <div className="flex items-center">
+                                                            {fileWithPassword.cardName && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={(e) => clearCardSelection(index, e)}
+                                                                    className="h-5 w-5 p-0 mr-1 hover:bg-gray-100 rounded-full"
+                                                                >
+                                                                    <X className="h-3 w-3" />
+                                                                </Button>
+                                                            )}
+                                                            <Search className="h-3 w-3 shrink-0 opacity-50" />
+                                                        </div>
+                                                    </div>
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-[300px] p-0" align="start">
+                                                <Command filter={(value, search) => {
+                                                    if (value.toLowerCase().includes(search.toLowerCase())) return 1
+                                                    return 0
+                                                }}>
+                                                    <CommandInput placeholder="Search credit card..." className="h-9 text-xs" />
+                                                    <CommandList>
+                                                        <CommandEmpty>No credit card found.</CommandEmpty>
+                                                        <CommandGroup>
+                                                            {creditCardOptions.map((card, cardIndex) => (
+                                                                <CommandItem
+                                                                    key={cardIndex}
+                                                                    value={card}
+                                                                    onSelect={(value) => {
+                                                                        handleCardSelection(index, value);
+                                                                        setOpenDropdown(null);
+                                                                    }}
+                                                                    className="text-xs"
+                                                                >
+                                                                    {card}
+                                                                </CommandItem>
+                                                            ))}
+                                                        </CommandGroup>
+                                                    </CommandList>
+                                                </Command>
+                                            </PopoverContent>
+                                        </Popover>
                                     </div>
                                 </div>
                             ))}
