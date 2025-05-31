@@ -241,7 +241,7 @@ const Recommendations = () => {
       // Keep the totalReturn as a string without converting to number
       // Check if totalReturn is a string before calling replace
       const totalReturnValue = typeof card.totalReturn === 'string'
-        ? card.totalReturn.replace('₹', '').replace(',', '')
+        ? card.totalReturn
         : String(card.totalReturn || '0');
 
       // Get top 4 return categories
@@ -249,7 +249,7 @@ const Recommendations = () => {
         .filter(([_, value]) => value !== '₹0.00' && value !== '₹0')
         .map(([category, value]) => ({
           category,
-          value: value.replace('₹', '').replace(',', ''),
+          value: value
         }))
         // Sort by numeric value for display purposes only
         .sort((a, b) => parseFloat(b.value) - parseFloat(a.value))
