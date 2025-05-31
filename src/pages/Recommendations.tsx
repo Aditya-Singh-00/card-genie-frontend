@@ -70,6 +70,25 @@ const Recommendations = () => {
   const [cardRecommendations, setCardRecommendations] = useState<CardRecommendation[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [categoryBreakdown, setCategoryBreakdown] = useState<Record<string, CategoryData> | null>(null);
+  const [loadingTextIndex, setLoadingTextIndex] = useState<number>(0);
+
+  // Array of loading text messages
+  const loadingTexts = [
+    "Finding the perfect credit card for your spending habits...",
+    "Calculating potential cashback and reward points for you...",
+    "Matching your spending pattern with the best card offers"
+  ];
+
+  // Effect to cycle through loading texts
+  useEffect(() => {
+    if (loading) {
+      const interval = setInterval(() => {
+        setLoadingTextIndex((prevIndex) => (prevIndex + 1) % loadingTexts.length);
+      }, 3000); // Change text every 3 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [loading, loadingTexts.length]);
 
   // Retrieve user form data and API response data from sessionStorage when component mounts
   useEffect(() => {
@@ -422,9 +441,14 @@ const Recommendations = () => {
   // If loading, show loading animation
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex justify-center items-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex flex-col justify-center items-center">
         <div className="w-64 h-64">
           <Lottie animationData={loaderAnimation} loop={true} />
+        </div>
+        <div className="text-center mt-4">
+          <p className={`text-lg font-medium text-blue-600 ${loadingTextIndex % 2 === 0 ? 'animate-pulse' : 'animate-bounce'}`}>
+            {loadingTexts[loadingTextIndex]}
+          </p>
         </div>
       </div>
     );

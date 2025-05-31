@@ -132,7 +132,7 @@ const Index = () => {
             <section className="container mx-auto px-4 py-12">
                 <div className="text-center mb-12">
                     <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-700 to-green-600 bg-clip-text text-transparent">
-                        Find Your Perfect Credit Card
+                        Discover the Best Credit Card for You
                     </h2>
                     <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
                         Get personalized credit card recommendations based on your spending patterns
@@ -159,7 +159,7 @@ const Index = () => {
                     {activeAction !== 'manual' ? (
                         <>
                             <h3 className="text-3xl font-bold text-center mb-8 text-gray-800">
-                                Get Started in 2 Simple Ways
+                                Start in 2 Easy Ways
                             </h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -350,17 +350,15 @@ const Index = () => {
                                 }`}>
                                     <CardContent className="p-8 text-center">
                                         <Calculator className="h-16 w-16 text-green-600 mx-auto mb-4"/>
-                                        <h4 className="text-xl font-semibold mb-3 text-gray-800">Tell Us Your
-                                            Expenses</h4>
+                                        <h4 className="text-xl font-semibold mb-3 text-gray-800">Enter Your Expenses Manually</h4>
                                         <p className="text-gray-600 mb-4">
-                                            Manually enter your monthly spending across different categories for
-                                            personalized recommendations.
+                                            Manually input your monthly spending by category to receive tailored recommendations.
                                         </p>
                                         <Button
                                             className="w-full bg-green-600 hover:bg-green-700"
                                             onClick={() => setActiveAction('manual')}
                                         >
-                                            Start Manual Entry
+                                            Begin Manual Entry
                                         </Button>
                                     </CardContent>
                                 </Card>

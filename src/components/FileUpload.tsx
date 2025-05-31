@@ -294,7 +294,7 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
                                     {/* Card Selection Dropdown */}
                                     <div className="mt-2">
                                         <Label htmlFor={`card-select-${index}`} className="text-xs text-gray-600 mb-1">
-                                            Select your credit card
+                                            Choose your credit card
                                         </Label>
                                         <Select
                                             value={fileWithPassword.cardName}
@@ -320,7 +320,7 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
                             <p className="text-xs text-green-700 mb-2">
                                 {uploadedFiles.length >= 3
                                     ? "Enough files for analysis."
-                                    : `Upload ${3 - uploadedFiles.length} more for better results (optional).`}
+                                    : `Upload ${3 - uploadedFiles.length} more files for better results (optional).`}
                             </p>
 
                             <div className="flex justify-center mb-2">
@@ -376,7 +376,7 @@ const FileUpload = ({onComplete}: FileUploadProps) => {
                                         <Loader2 className="mr-2 h-3 w-3 animate-spin" />
                                         Analyzing...
                                     </div>
-                                ) : `Analyze (${uploadedFiles.length} files)`}
+                                ) : `Get Recommendations`}
                             </Button>
                         </div>
                     </CardContent>
