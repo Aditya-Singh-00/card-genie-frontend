@@ -129,7 +129,7 @@ const Index = () => {
                         <div className="flex items-center gap-3">
                             <img src={gromoLogo} alt="Gromo Logo" className="h-8 w-8" />
                             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
-                                Saving Maximizer
+                                SaveMax
                             </h1>
                         </div>
                     </div>
