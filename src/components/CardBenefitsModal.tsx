@@ -215,7 +215,7 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                 </div>
 
                 <Tabs defaultValue="returns" className="w-full">
-                    <TabsList className="grid w-full grid-cols-5">
+                    <TabsList className="grid w-full grid-cols-4">
                         <TabsTrigger value="returns" className="flex items-center gap-2">
                             <Gift className="h-4 w-4"/>
                             Returns
@@ -231,10 +231,6 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                         <TabsTrigger value="rewards" className="flex items-center gap-2">
                             <Star className="h-4 w-4"/>
                             Rewards
-                        </TabsTrigger>
-                        <TabsTrigger value="benefits" className="flex items-center gap-2">
-                            <Shield className="h-4 w-4"/>
-                            Benefits
                         </TabsTrigger>
                     </TabsList>
 
@@ -328,23 +324,6 @@ const CardBenefitsModal = ({card, onClose}: CardBenefitsModalProps) => {
                     </TabsContent>
 
 
-                    <TabsContent value="benefits" className="mt-6">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Additional Benefits</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {benefitsData.benefits.map((benefit, index) => (
-                                        <div key={index} className="p-4 border border-gray-200 rounded-lg">
-                                            <h4 className="font-semibold text-gray-800 mb-1">{benefit.feature}</h4>
-                                            <p className="text-gray-600">{benefit.detail}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
                 </Tabs>
 
                 <div className="flex gap-4 mt-6">
